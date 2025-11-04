@@ -254,4 +254,102 @@
                             ၈ ပတ်
                         </div>
                         <div class="flex flex-col space-y-2">
-                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-prima
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Zami Shar</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">May Lat Lunn</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Htoi Tsin Pan</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Zami Shine</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Caroline</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Summary View -->
+                <div id="summary" class="schedule-view hidden">
+                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
+                    
+                    <div class="p-4 bg-white rounded-xl shadow-lg overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px] summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>
+                                    <th class="bg-primary text-white p-3">သဘာပတိ</th>
+                                    <th class="bg-primary text-white p-3">ဖတ်ရှုခြင်း</th>
+                                    <th class="bg-primary text-white p-3">ချီးမွမ်းခြင်း</th>
+                                    <th class="bg-primary text-white p-3 rounded-tr-lg">ဆုတောင်းခြင်း</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-gray-50"><td>၁ ပတ်</td><td>Tu Mai</td><td>Seng Awng</td><td>Ah Dau</td><td>Htoi Tsin Pan</td></tr>
+                                <tr><td>၂ ပတ်</td><td>Dee Bine</td><td>Benjamin</td><td>Zami Shar</td><td>Shin Ram</td></tr>
+                                <tr class="bg-gray-50"><td>၃ ပတ်</td><td>Hpa Rat Hkawn</td><td>Zami Shine</td><td>Pan Ra</td><td>Ah Dau</td></tr>
+                                <tr><td>၄ ပတ်</td><td>May Lat Lunn</td><td>Htoi Tsin Pan</td><td>Tu Mai</td><td>Dee Bine</td></tr>
+                                <tr class="bg-gray-50"><td>၅ ပတ်</td><td>Benjamin</td><td>Shin Ram</td><td>Mi Mi Shar</td><td>Zami Shine</td></tr>
+                                <tr><td>၆ ပတ်</td><td>Caroline</td><td>Pan Ra</td><td>Hpa Rat Hkawn</td><td>Tu Mai</td></tr>
+                                <tr class="bg-gray-50"><td>၇ ပတ်</td><td>Mi Mi Shar</td><td>Ah Dau</td><td>Benjamin</td><td>Hpa Rat Hkawn</td></tr>
+                                <tr><td>၈ ပတ်</td><td>Zami Shar</td><td>May Lat Lunn</td><td>Htoi Tsin Pan</td><td>Caroline</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mt-4 text-sm">
+                        <p class="font-bold">မှတ်ချက်။</p>
+                        <p>အကျဉ်းချုပ်ဇယားတွင် အလှူငွေကောက်ခံသူကို ထည့်သွင်းမထားပါ။ အသေးစိတ်ကို အပတ်စဉ် စာမျက်နှာများတွင် ကြည့်ရှုနိုင်ပါသည်။</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Footer Section -->
+        <footer class="text-center p-4 bg-gray-200 text-gray-600 text-xs rounded-b-xl border-t border-gray-300">
+            &copy; ၂၀၂၄ လူငယ်ဝတ်ပြုခြင်း အစီစဉ်။ မင်္ဂလာရှိသော နေ့ဖြစ်ပါစေ။
+        </footer>
+    </div>
+
+    <!-- JavaScript for Tab Functionality -->
+    <script>
+        /**
+         * Switches the view between different schedule sections (Month 1, Month 2, Summary).
+         * @param {string} viewId - The ID of the schedule view to show ('month1', 'month2', or 'summary').
+         */
+        function showSchedule(viewId) {
+            // Hide all views
+            document.querySelectorAll('.schedule-view').forEach(view => {
+                view.classList.add('hidden');
+                view.classList.remove('active-view');
+            });
+
+            // Show the selected view
+            const selectedView = document.getElementById(viewId);
+            if (selectedView) {
+                selectedView.classList.remove('hidden');
+                selectedView.classList.add('active-view');
+            }
+
+            // Update active tab button style
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
+                btn.classList.add('bg-white', 'text-primary', 'shadow-md');
+                
+                if (btn.textContent.trim().toLowerCase().includes(viewId.replace('month', 'လ ').toLowerCase()) || 
+                    (viewId === 'summary' && btn.textContent.trim() === 'အကျဉ်းချုပ်')) {
+                    
+                    btn.classList.add('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
+                    btn.classList.remove('bg-white', 'text-primary', 'shadow-md');
+                }
+            });
+        }
+
+        // Initialize: ensure the correct tab is highlighted on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Manually set the initial active state for the first tab
+            const firstTab = document.querySelector('.tab-btn');
+            if (firstTab) {
+                firstTab.classList.add('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
+                firstTab.classList.remove('bg-white', 'text-primary', 'shadow-md');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
