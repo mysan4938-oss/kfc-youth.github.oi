@@ -130,13 +130,13 @@
                 
                 <!-- Mobile Tabs -->
                 <div class="flex overflow-x-auto bg-gray-200 p-1.5 rounded-lg mb-4 mobile-tabs">
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md active-tab" onclick="showSchedule('month1')">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" data-target="month1">
                         လ ၁
                     </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" onclick="showSchedule('month2')">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" data-target="month2">
                         လ ၂
                     </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 bg-white shadow-md" onclick="showSchedule('summary')">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 bg-white shadow-md" data-target="summary">
                         အကျဉ်းချုပ်
                     </button>
                 </div>
@@ -330,23 +330,29 @@
                 btn.classList.remove('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
                 btn.classList.add('bg-white', 'text-primary', 'shadow-md');
                 
-                if (btn.textContent.trim().toLowerCase().includes(viewId.replace('month', 'လ ').toLowerCase()) || 
-                    (viewId === 'summary' && btn.textContent.trim() === 'အကျဉ်းချုပ်')) {
-                    
+                // Check if the button's data-target matches the current viewId
+                if (btn.getAttribute('data-target') === viewId) {
                     btn.classList.add('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
                     btn.classList.remove('bg-white', 'text-primary', 'shadow-md');
                 }
             });
         }
 
-        // Initialize: ensure the correct tab is highlighted on load
+        // Initialize: ensure the correct tab is functional and highlighted on load
         document.addEventListener('DOMContentLoaded', () => {
-            // Manually set the initial active state for the first tab
-            const firstTab = document.querySelector('.tab-btn');
-            if (firstTab) {
-                firstTab.classList.add('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
-                firstTab.classList.remove('bg-white', 'text-primary', 'shadow-md');
-            }
+            const tabs = document.querySelectorAll('.tab-btn');
+
+            // 1. Setup event listeners using data-target attribute
+            tabs.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Get the target view ID from the data attribute
+                    const viewId = btn.getAttribute('data-target');
+                    showSchedule(viewId);
+                });
+            });
+
+            // 2. Initial state setup: show 'month1' and style its button
+            showSchedule('month1');
         });
     </script>
 </body>
