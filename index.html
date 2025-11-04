@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>လူငယ်ဝတ်ပြုခြင်း အစီစဉ် - Youth Worship Program</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind to use a custom font stack that supports Myanmar script
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pyidaungsu', 'Myanmar Text', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#1e3a8a', // Dark Indigo
+                        'secondary': '#2c5aa0', // Lighter Indigo
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom style for better font support and scrollbar hiding -->
+    <style>
+        body {
+            font-family: 'Pyidaungsu', 'Myanmar Text', 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Hide scrollbar for mobile tabs */
+        .mobile-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .mobile-tabs {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans">
+    <div class="container max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        
+        <!-- Header Section -->
+        <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
+            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်း အစီစဉ်</h1>
+            <div class="text-lg opacity-90">Youth Worship Program Schedule - 8 Weeks</div>
+        </header>
+        
+        <div class="p-4 md:p-6 lg:p-8">
+            
+            <!-- Participants Section -->
+            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
+                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
+                    ဆောင်ရွက်မည့်သူများ
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="p-4 bg-white rounded-lg shadow-md border border-blue-100">
+                        <h3 class="text-lg font-semibold text-secondary text-center border-b border-dashed border-gray-300 pb-2 mb-3">
+                            မိန်းကလေး
+                        </h3>
+                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                            <li class="border-b border-gray-200 py-1 text-sm">May Lat Lunn</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Htoi Tsin Pan</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Zami Shar</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Mi Mi Shar</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Zami Shine</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Pan Ra</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Hpa Rat Hkawn</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Caroline</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-4 bg-white rounded-lg shadow-md border border-blue-100">
+                        <h3 class="text-lg font-semibold text-secondary text-center border-b border-dashed border-gray-300 pb-2 mb-3">
+                            ယောင်္ကျားလေး
+                        </h3>
+                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                            <li class="border-b border-gray-200 py-1 text-sm">Tu Mai</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Seng Awng</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Ah Dau</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Dee Bine</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Benjamin</li>
+                            <li class="border-b border-gray-200 py-1 text-sm">Shin Ram</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Roles Section -->
+            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
+                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
+                    တာဝန်များ
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Role Item 1 -->
+                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
+                        <strong class="text-primary block mb-1">သဘာပတိ (Chairperson)</strong>
+                        <div class="text-sm text-gray-600">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
+                    </div>
+                    <!-- Role Item 2 -->
+                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
+                        <strong class="text-primary block mb-1">အပြန်အလှန်ဖတ်ရှုခြင်း (Scripture Reading)</strong>
+                        <div class="text-sm text-gray-600">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
+                    </div>
+                    <!-- Role Item 3 -->
+                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
+                        <strong class="text-primary block mb-1">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း (Individual Praise)</strong>
+                        <div class="text-sm text-gray-600">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
+                    </div>
+                    <!-- Role Item 4 -->
+                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
+                        <strong class="text-primary block mb-1">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း (Prayer for Offering Collection)</strong>
+                        <div class="text-sm text-gray-600">အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း</div>
+                    </div>
+                    <!-- Role Item 5 -->
+                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
+                        <strong class="text-primary block mb-1">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း (Prayer for Fullness)</strong>
+                        <div class="text-sm text-gray-600">အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Schedule Section -->
+            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
+                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
+                    အစီအစဉ် (၈ ပတ်)
+                </h2>
+                
+                <!-- Mobile Tabs -->
+                <div class="flex overflow-x-auto bg-gray-200 p-1.5 rounded-lg mb-4 mobile-tabs">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md active-tab" onclick="showSchedule('month1')">
+                        လ ၁
+                    </button>
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" onclick="showSchedule('month2')">
+                        လ ၂
+                    </button>
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 bg-white shadow-md" onclick="showSchedule('summary')">
+                        အကျဉ်းချုပ်
+                    </button>
+                </div>
+                
+                <!-- Month 1 Schedule -->
+                <div id="month1" class="schedule-view active-view">
+                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">ပထမ လ</div>
+                    
+                    <!-- Week 1 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၁ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Tu Mai</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Seng Awng</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Ah Dau</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">May Lat Lunn</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Htoi Tsin Pan</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 2 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၂ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Dee Bine</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Benjamin</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Zami Shar</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Mi Mi Shar</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Shin Ram</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 3 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၃ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Hpa Rat Hkawn</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Zami Shine</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Pan Ra</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Caroline</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Ah Dau</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 4 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၄ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">May Lat Lunn</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Htoi Tsin Pan</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Tu Mai</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Seng Awng</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Dee Bine</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Month 2 Schedule -->
+                <div id="month2" class="schedule-view hidden">
+                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">ဒုတိယ လ</div>
+                    
+                    <!-- Week 5 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၅ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Benjamin</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Shin Ram</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Mi Mi Shar</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Zami Shar</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Zami Shine</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 6 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၆ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Caroline</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Pan Ra</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Hpa Rat Hkawn</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Dee Bine</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Tu Mai</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 7 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၇ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">သဘာပတိ</span> <span class="text-gray-700">Mi Mi Shar</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အပြန်အလှန်ဖတ်ရှုခြင်း</span> <span class="text-gray-700">Ah Dau</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း</span> <span class="text-gray-700">Benjamin</span></div>
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-primary">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Shin Ram</span></div>
+                            <div class="flex justify-between p-2"><span class="font-bold text-primary">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း</span> <span class="text-gray-700">Hpa Rat Hkawn</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Week 8 -->
+                    <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                        <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                            ၈ ပတ်
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between p-2 border-b border-dashed border-gray-300"><span class="font-bold text-prima
