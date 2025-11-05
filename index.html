@@ -39,12 +39,47 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans">
-    <div class="container max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-2xl text-center border-t-4 border-primary">
+            <h1 class="text-3xl font-extrabold text-primary mb-4">
+                အစီစဉ်
+            </h1>
+            <p class="text-gray-600 mb-6">
+                အစီစဉ်ကို ကြည့်ရှုရန် Passcode ထည့်သွင်းပါ။
+            </p>
+            
+            <form id="login-form" onsubmit="attemptLogin(event)">
+                <input
+                    type="password"
+                    id="passcode-input"
+                    placeholder="Passcode"
+                    required
+                    class="w-full px-4 py-3 mb-4 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-secondary transition duration-300 tracking-wider"
+                />
+                <button
+                    type="submit"
+                    class="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-secondary transition duration-300 shadow-lg transform hover:scale-[1.01] active:scale-95"
+                >
+                    ဝင်မည်
+                </button>
+            </form>
+            
+            <p id="error-message" class="text-red-500 mt-4 hidden font-medium">
+                <!-- Error message will appear here -->
+            </p>
+        </div>
+    </div>
+    <!-- END LOGIN SCREEN -->
+
+    <!-- MAIN SCHEDULE CONTENT (Initially hidden) -->
+    <div id="schedule-content" class="container max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden hidden">
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
-            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်း အစီစဉ်</h1>
-            <div class="text-lg opacity-90">Youth Worship Program Schedule - 8 Weeks</div>
+            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">KFC လူငယ်ဝတ်ပြုခြင်းအစီစဉ်</h1>
+            <div class="text-lg opacity-90">KFC Youth Worship Program Schedule - 8 Weeks</div>
         </header>
         
         <div class="p-4 md:p-6 lg:p-8">
@@ -191,19 +226,23 @@
 
     <!-- JavaScript for Data Management and Rendering -->
     <script>
+        // --- AUTHENTICATION CONFIG ---
+        const CORRECT_PASSCODE = "kfcyouth2025";
+        const STORAGE_KEY = 'schedule_authenticated'; 
+
         // --- DATA STRUCTURE FOR EASY EXPANSION ---
         const scheduleData = [
             { week: 1, month: 1, roles: {
-                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau" // SWAPPED
+                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau"
             }},
             { week: 2, month: 1, roles: {
                 chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram"
             }},
             { week: 3, month: 1, roles: {
-                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan" // SWAPPED
+                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan"
             }},
             { week: 4, month: 1, roles: {
-                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine" // SWAPPED
+                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine"
             }},
             { week: 5, month: 2, roles: {
                 chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine"
@@ -212,10 +251,10 @@
                 chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai"
             }},
             { week: 7, month: 2, roles: {
-                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn" // SWAPPED
+                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn"
             }},
             { week: 8, month: 2, roles: {
-                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline" // SWAPPED
+                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline"
             }},
         ];
 
@@ -227,13 +266,48 @@
             fullness: "ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း",
         };
 
+        // --- AUTHENTICATION FUNCTIONS ---
+
+        /**
+         * Attempts to log in by validating the passcode.
+         * @param {Event} event - The form submission event.
+         */
+        function attemptLogin(event) {
+            event.preventDefault(); // Prevent form default submission
+            
+            const passcodeInput = document.getElementById('passcode-input');
+            const passcode = passcodeInput.value.trim();
+            const errorMessage = document.getElementById('error-message');
+            
+            if (passcode === CORRECT_PASSCODE) {
+                errorMessage.classList.add('hidden');
+                // Successful login
+                localStorage.setItem(STORAGE_KEY, 'true');
+                initAppContent();
+            } else {
+                errorMessage.textContent = "Passcode is incorrect. Please try again.";
+                errorMessage.classList.remove('hidden');
+                passcodeInput.value = ''; // Clear input on failure
+            }
+        }
+
+        /**
+         * Shows the main schedule content and hides the login screen.
+         */
+        function showScheduleContent() {
+            const loginScreen = document.getElementById('login-screen');
+            const scheduleContent = document.getElementById('schedule-content');
+            
+            // Hide the login screen, show the schedule
+            loginScreen.classList.add('hidden');
+            scheduleContent.classList.remove('hidden');
+        }
+        
         // --- DYNAMIC RENDERING FUNCTIONS ---
 
         /**
          * Generates the HTML for a single week's detailed view.
          * @param {Object} weekData - The data for the specific week.
-         * @param {number} weekData.week - The week number.
-         * @param {Object} weekData.roles - The role assignments.
          * @returns {string} The HTML string for the week block.
          */
         function renderWeekBlock(weekData) {
@@ -279,7 +353,6 @@
             });
             
             // Clear existing content and inject new content
-            // We keep the month title, so only append to clear the old hardcoded content
             const monthTitle = container.querySelector('div.text-center');
             container.innerHTML = ''; // Clear previous content
             if (monthTitle) {
@@ -318,7 +391,7 @@
             tbody.innerHTML = summaryHtml;
         }
 
-        // --- TAB SWITCHING LOGIC (Adapted from original) ---
+        // --- TAB SWITCHING LOGIC ---
 
         /**
          * Switches the view between different schedule sections (Month 1, Month 2, Summary).
@@ -350,9 +423,11 @@
                 }
             });
         }
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
+        
+        /**
+         * Initializes the dynamic content and UI events after successful authentication.
+         */
+        function initAppContent() {
             // 1. Render all dynamic sections using the structured data
             renderMonthlySchedule(1, 'month1');
             renderMonthlySchedule(2, 'month2');
@@ -367,8 +442,20 @@
                 });
             });
 
-            // 3. Initial state setup: show 'month1' and style its button
+            // 3. Show content and set initial tab state
+            showScheduleContent();
             showSchedule('month1');
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem(STORAGE_KEY) === 'true') {
+                // If authenticated, immediately initialize and show the content
+                initAppContent();
+            } else {
+                // Otherwise, the login screen is visible by default (via HTML classes)
+                // and the main content is hidden, waiting for login.
+            }
         });
     </script>
 </body>
