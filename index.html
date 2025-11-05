@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KFC လူငယ်ဝတ်ပြုခြင်းအစီစဉ် - KFC Youth Worship Program</title>
+    <title>လူငယ်ဝတ်ပြုခြင်းအစီစဉ် - Youth Worship Program</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -24,29 +24,71 @@
     </script>
     <!-- Custom style for better font support and scrollbar hiding -->
     <style>
+        /* BASE STYLES */
         body {
+            /* Keep base body background minimal */
+            background-color: #0d001a; 
             font-family: 'Pyidaungsu', 'Myanmar Text', 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            position: relative;
         }
-        /* Hide scrollbar for mobile tabs */
-        .mobile-tabs::-webkit-scrollbar {
-            display: none;
+
+        /* Ensure scrollbar hiding remains */
+        .mobile-tabs::-webkit-scrollbar { display: none; }
+        .mobile-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 1. LOGIN PAGE BACKGROUND*/
+        #login-bg-image {
+            background-image: url('https://github.com/mysan4938-oss/kfc-youth.github.oi/blob/main/login.png');
+            filter: blur(5px) brightness(0.7); /* Apply blur and darken */
         }
-        .mobile-tabs {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+        
+        /* 2. MAIN PAGE BACKGROUND*/
+        #main-bg-image {
+            /* Placeholder for Unsplash "Merry Christmas" theme - change this URL to a direct image if available */
+            background-image: url('https://github.com/mysan4938-oss/kfc-youth.github.oi/blob/main/main.png'); 
+            filter: blur(5px) brightness(0.7); /* Apply blur and darken */
         }
+        
+        /* Morph Glass Styles */
+        .morph-glass {
+            /* General Glass Effect */
+            background: rgba(255, 255, 255, 0.1); /* Light backdrop */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* Red/Green Highlights for Eyecatching Effect */
+            box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3), 0 -4px 20px rgba(255, 0, 0, 0.3);
+            color: white; /* Ensure text is visible */
+        }
+        
+        .morph-glass-card {
+            background: rgba(255, 255, 255, 0.2); /* More transparent internal card */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            /* Subtle Green/Red inner shadow for depth */
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1), inset 0 0 10px rgba(255, 0, 0, 0.1);
+        }
+        
+        /* General background utility for background divs */
+        .bg-cover { background-size: cover; }
+        .bg-center { background-position: center; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans">
+<body class="min-h-screen p-4 md:p-8 font-sans">
+    
+    <!-- BACKGROUND DIVS (Fixed position, low z-index) -->
+    <div id="login-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0"></div>
+    <div id="main-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0 hidden"></div>
+    <!-- END BACKGROUND DIVS -->
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="flex items-center justify-center min-h-screen p-4">
-        <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-2xl text-center border-t-4 border-primary">
-            <h1 class="text-3xl font-extrabold text-primary mb-4">
+    <!-- LOGIN SCREEN (Relative position, high z-index) -->
+    <div id="login-screen" class="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-sm p-8 rounded-xl text-center border-t-4 border-primary morph-glass-card shadow-xl">
+            <h1 class="text-3xl font-extrabold text-white mb-4">
                 အစီစဉ်
             </h1>
-            <p class="text-gray-600 mb-6">
+            <p class="text-gray-200 mb-6">
                 အစီစဉ်ကို ကြည့်ရှုရန် Passcode ထည့်သွင်းပါ။
             </p>
             
@@ -56,7 +98,7 @@
                     id="passcode-input"
                     placeholder="Passcode"
                     required
-                    class="w-full px-4 py-3 mb-4 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-secondary transition duration-300 tracking-wider"
+                    class="w-full px-4 py-3 mb-4 text-lg border-2 border-gray-500 rounded-lg focus:outline-none focus:border-secondary transition duration-300 tracking-wider text-gray-800"
                 />
                 <button
                     type="submit"
@@ -66,113 +108,125 @@
                 </button>
             </form>
             
-            <p id="error-message" class="text-red-500 mt-4 hidden font-medium">
+            <p id="error-message" class="text-red-400 mt-4 hidden font-medium">
                 <!-- Error message will appear here -->
             </p>
         </div>
     </div>
     <!-- END LOGIN SCREEN -->
 
-    <!-- MAIN SCHEDULE CONTENT (Initially hidden) -->
-    <div id="schedule-content" class="container max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden hidden">
+    <!-- MAIN SCHEDULE CONTENT (Initially hidden, high z-index) -->
+    <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden hidden morph-glass relative z-10">
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
-            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">KFC လူငယ်ဝတ်ပြုခြင်းအစီစဉ်</h1>
-            <div class="text-lg opacity-90">KFC Youth Worship Program Schedule - 8 Weeks</div>
+            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်းအစီစဉ် (၈ ပတ်)</h1>
+            <div class="text-lg opacity-90">Youth Worship Program Schedule</div>
         </header>
         
-        <div class="p-4 md:p-6 lg:p-8">
+        <div class="p-4 md:p-6 lg:p-8 text-white">
             
-            <!-- Participants Section -->
-            <!-- This section is left static as it is a fixed list of participants -->
-            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
-                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
-                    ဆောင်ရွက်မည့်သူများ
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    <div class="p-4 bg-white rounded-lg shadow-md border border-blue-100">
-                        <h3 class="text-lg font-semibold text-secondary text-center border-b border-dashed border-gray-300 pb-2 mb-3">
-                            မိန်းကလေး
-                        </h3>
-                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                            <li class="border-b border-gray-200 py-1 text-sm">May Lat Lunn</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Htoi Tsin Pan</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Zami Shar</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Mi Mi Shar</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Zami Shine</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Pan Ra</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Hpa Rat Hkawn</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Caroline</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="p-4 bg-white rounded-lg shadow-md border border-blue-100">
-                        <h3 class="text-lg font-semibold text-secondary text-center border-b border-dashed border-gray-300 pb-2 mb-3">
-                            ယောင်္ကျားလေး
-                        </h3>
-                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                            <li class="border-b border-gray-200 py-1 text-sm">Tu Mai</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Seng Awng</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Ah Dau</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Dee Bine</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Benjamin</li>
-                            <li class="border-b border-gray-200 py-1 text-sm">Shin Ram</li>
-                        </ul>
+            <!-- Participants Section (Collapsible - morph-glass-card applied) -->
+            <section class="mb-8 rounded-xl shadow-inner overflow-hidden morph-glass-card">
+                <button class="w-full p-4 md:p-6 bg-white/20 hover:bg-white/30 transition duration-300 flex justify-between items-center" 
+                        onclick="toggleSection('participants-content', this)">
+                    <h2 class="text-xl md:text-2xl font-bold text-white">
+                        ဆောင်ရွက်မည့်သူများ (မိန်းကလေး / ယောင်္ကျားလေး)
+                    </h2>
+                    <span class="text-2xl text-white transform transition-transform duration-300">+</span>
+                </button>
+                
+                <div id="participants-content" class="p-4 transition-all duration-500 max-h-0 overflow-hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <div class="p-4 rounded-lg shadow-md border border-white/40 morph-glass-card">
+                            <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
+                                မိန်းကလေး
+                            </h3>
+                            <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                                <li class="border-b border-white/30 py-1 text-sm">May Lat Lunn</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Htoi Tsin Pan</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Zami Shar</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Mi Mi Shar</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Zami Shine</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Pan Ra</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Hpa Rat Hkawn</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Caroline</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="p-4 rounded-lg shadow-md border border-white/40 morph-glass-card">
+                            <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
+                                ယောင်္ကျားလေး
+                            </h3>
+                            <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                                <li class="border-b border-white/30 py-1 text-sm">Tu Mai</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Seng Awng</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Ah Dau</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Dee Bine</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Benjamin</li>
+                                <li class="border-b border-white/30 py-1 text-sm">Shin Ram</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
             
-            <!-- Roles Section -->
-            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
-                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
-                    တာဝန်များ
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Role Item 1 -->
-                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
-                        <strong class="text-primary block mb-1">သဘာပတိ (Chairperson)</strong>
-                        <div class="text-sm text-gray-600">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
-                    </div>
-                    <!-- Role Item 2 -->
-                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
-                        <strong class="text-primary block mb-1">အပြန်အလှန်ဖတ်ရှုခြင်း (Scripture Reading)</strong>
-                        <div class="text-sm text-gray-600">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
-                    </div>
-                    <!-- Role Item 3 -->
-                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
-                        <strong class="text-primary block mb-1">တစ်ကိုယ်တော်ချီးမွမ်းခြင်း (Individual Praise)</strong>
-                        <div class="text-sm text-gray-600">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
-                    </div>
-                    <!-- Role Item 4 -->
-                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
-                        <strong class="text-primary block mb-1">အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း (Prayer for Offering Collection)</strong>
-                        <div class="text-sm text-gray-600">အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း</div>
-                    </div>
-                    <!-- Role Item 5 -->
-                    <div class="p-3 bg-white rounded-lg shadow-sm border-l-4 border-secondary">
-                        <strong class="text-primary block mb-1">ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း (Prayer for Fullness)</strong>
-                        <div class="text-sm text-gray-600">အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း</div>
+            <!-- Roles Section (Collapsible - morph-glass-card applied) -->
+            <section class="mb-8 rounded-xl shadow-inner overflow-hidden morph-glass-card">
+                <button class="w-full p-4 md:p-6 bg-white/20 hover:bg-white/30 transition duration-300 flex justify-between items-center"
+                        onclick="toggleSection('roles-content', this)">
+                    <h2 class="text-xl md:text-2xl font-bold text-white">
+                        တာဝန်များ
+                    </h2>
+                    <span class="text-2xl text-white transform transition-transform duration-300">+</span>
+                </button>
+                <div id="roles-content" class="p-4 transition-all duration-500 max-h-0 overflow-hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Role Item 1 -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">သဘာပတိ (Chairperson)</strong>
+                            <div class="text-sm text-gray-200">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
+                        </div>
+                        <!-- Role Item 2 -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">အပြန်လှန်ဖတ်ခြင်း (Scripture Reading)</strong>
+                            <div class="text-sm text-gray-200">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
+                        </div>
+                        <!-- Role Item 3 -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">Solo ချီးမွမ်းခြင်း (Individual Praise)</strong>
+                            <div class="text-sm text-gray-200">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
+                        </div>
+                        <!-- Role Item 4 -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">အလှူငွေဆပ်ကပ်ခြင်း (Offering Collection)</strong>
+                            <div class="text-sm text-gray-200">အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း</div>
+                        </div>
+                        <!-- Role Item 5 -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">ပြည့်စုံဆုတောင်းခြင်း (Prayer for Fullness)</strong>
+                            <div class="text-sm text-gray-200">အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း</div>
+                        </div>
                     </div>
                 </div>
             </section>
             
-            <!-- Schedule Section -->
-            <section class="mb-8 p-4 bg-blue-50/50 rounded-xl shadow-inner">
-                <h2 class="text-xl md:text-2xl font-bold text-primary border-b-2 border-blue-200 pb-3 mb-4">
+            <!-- Schedule Section (morph-glass-card applied) -->
+            <section class="mb-8 p-4 rounded-xl shadow-inner morph-glass-card">
+                <h2 class="text-xl md:text-2xl font-bold text-white border-b-2 border-white/50 pb-3 mb-4">
                     အစီအစဉ် (၈ ပတ်)
                 </h2>
                 
-                <!-- Mobile Tabs -->
-                <div class="flex overflow-x-auto bg-gray-200 p-1.5 rounded-lg mb-4 mobile-tabs">
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" data-target="month1">
+                <!-- Mobile Tabs (Background adjusted for glass effect) -->
+                <div class="flex overflow-x-auto bg-white/20 p-1.5 rounded-lg mb-4 mobile-tabs">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 mr-2 bg-white/30 shadow-md" data-target="month1">
                         လ ၁
                     </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 mr-2 bg-white shadow-md" data-target="month2">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 mr-2 bg-white/30 shadow-md" data-target="month2">
                         လ ၂
                     </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-primary transition duration-300 bg-white shadow-md" data-target="summary">
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 bg-white/30 shadow-md" data-target="summary">
                         အကျဉ်းချုပ်
                     </button>
                 </div>
@@ -193,15 +247,16 @@
                 <div id="summary" class="schedule-view hidden">
                     <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
                     
-                    <div class="p-4 bg-white rounded-xl shadow-lg overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[600px] summary-table" id="summary-table">
+                    <div class="p-4 rounded-xl shadow-lg overflow-x-auto morph-glass-card">
+                        <table class="w-full text-left border-collapse min-w-[700px] summary-table" id="summary-table">
                             <thead>
                                 <tr>
                                     <th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>
                                     <th class="bg-primary text-white p-3">သဘာပတိ</th>
-                                    <th class="bg-primary text-white p-3">ဖတ်ရှုခြင်း</th>
-                                    <th class="bg-primary text-white p-3">ချီးမွမ်းခြင်း</th>
-                                    <th class="bg-primary text-white p-3 rounded-tr-lg">ဆုတောင်းခြင်း</th>
+                                    <th class="bg-primary text-white p-3">အပြန်လှန်ဖတ်ခြင်း</th>
+                                    <th class="bg-primary text-white p-3">Solo ချီးမွမ်းခြင်း</th>
+                                    <th class="bg-primary text-white p-3">အလှူငွေဆပ်ကပ်ခြင်း</th>
+                                    <th class="bg-primary text-white p-3 rounded-tr-lg">ပြည့်စုံဆုတောင်းခြင်း</th>
                                 </tr>
                             </thead>
                             <tbody id="summary-tbody">
@@ -209,18 +264,14 @@
                             </tbody>
                         </table>
                     </div>
-                    
-                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg mt-4 text-sm">
-                        <p class="font-bold">မှတ်ချက်။</p>
-                        <p>အကျဉ်းချုပ်ဇယားတွင် အလှူငွေကောက်ခံသူကို ထည့်သွင်းမထားပါ။ အသေးစိတ်ကို အပတ်စဉ် စာမျက်နှာများတွင် ကြည့်ရှုနိုင်ပါသည်။</p>
-                    </div>
                 </div>
             </section>
         </div>
         
-        <!-- Footer Section -->
-        <footer class="text-center p-4 bg-gray-200 text-gray-600 text-xs rounded-b-xl border-t border-gray-300">
-            &copy; ၂၀၂၄ လူငယ်ဝတ်ပြုခြင်း အစီစဉ်။ မင်္ဂလာရှိသော နေ့ဖြစ်ပါစေ။
+        <!-- Footer Section (Adjusted for glass effect) -->
+        <footer class="text-center p-4 bg-white/20 text-white text-xs rounded-b-xl border-t border-white/50">
+            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်း အစီစဉ်။ မင်္ဂလာရှိသော နေ့ဖြစ်ပါစေ။
+           ❤️ In Love of Jesus ❤️
         </footer>
     </div>
 
@@ -230,7 +281,7 @@
         const CORRECT_PASSCODE = "kfcyouth2025";
         const STORAGE_KEY = 'schedule_authenticated'; 
 
-        // --- DATA STRUCTURE FOR EASY EXPANSION ---
+        // --- DATA STRUCTURE FOR EASY EXPANSION (UNCHANGED NAMES) ---
         const scheduleData = [
             { week: 1, month: 1, roles: {
                 chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau"
@@ -258,13 +309,44 @@
             }},
         ];
 
+        // --- UPDATED ROLE LABELS FOR CONSISTENCY ---
         const roleLabels = {
             chairperson: "သဘာပတိ",
-            scripture: "အပြန်အလှန်ဖတ်ရှုခြင်း",
-            praise: "တစ်ကိုယ်တော်ချီးမွမ်းခြင်း",
-            offering: "အလှူငွေကောက်ခံခြင်းနှင့် ဆုတောင်းခြင်း",
-            fullness: "ပြည့်စုံခြင်းအတွက် ဆုတောင်းခြင်း",
+            scripture: "အပြန်လှန်ဖတ်ခြင်း", 
+            praise: "Solo ချီးမွမ်းခြင်း",      
+            offering: "အလှူငွေဆပ်ကပ်ခြင်း",  
+            fullness: "ပြည့်စုံဆုတောင်းခြင်း",  
         };
+
+        // --- ACCORDION TOGGLE FUNCTION ---
+
+        /**
+         * Toggles the visibility of a content section (Accordion).
+         * Uses max-h classes for smooth CSS transition.
+         * @param {string} contentId - The ID of the content div to toggle.
+         * @param {HTMLElement} button - The button element that was clicked.
+         */
+        function toggleSection(contentId, button) {
+            const content = document.getElementById(contentId);
+            const icon = button.querySelector('span');
+
+            if (content.classList.contains('max-h-0')) {
+                // Expand
+                // Use max-h-screen for a large enough height to allow the content to show
+                content.classList.remove('max-h-0');
+                content.classList.add('max-h-screen'); 
+                icon.classList.add('rotate-45'); 
+                // Add padding back for visual appeal
+                content.classList.add('pb-4', 'pt-2'); 
+            } else {
+                // Collapse
+                content.classList.remove('max-h-screen');
+                content.classList.add('max-h-0');
+                icon.classList.remove('rotate-45');
+                content.classList.remove('pb-4', 'pt-2');
+            }
+        }
+
 
         // --- AUTHENTICATION FUNCTIONS ---
 
@@ -282,7 +364,7 @@
             if (passcode === CORRECT_PASSCODE) {
                 errorMessage.classList.add('hidden');
                 // Successful login
-                localStorage.setItem(STORAGE_KEY, 'true');
+                localStorage.setItem(STORAGE_KEY, 'true'); 
                 initAppContent();
             } else {
                 errorMessage.textContent = "Passcode is incorrect. Please try again.";
@@ -292,15 +374,21 @@
         }
 
         /**
-         * Shows the main schedule content and hides the login screen.
+         * Shows the main schedule content and hides the login screen, managing backgrounds.
          */
         function showScheduleContent() {
             const loginScreen = document.getElementById('login-screen');
             const scheduleContent = document.getElementById('schedule-content');
+            const loginBg = document.getElementById('login-bg-image');
+            const mainBg = document.getElementById('main-bg-image');
             
             // Hide the login screen, show the schedule
             loginScreen.classList.add('hidden');
             scheduleContent.classList.remove('hidden');
+            
+            // Switch backgrounds
+            loginBg.classList.add('hidden');
+            mainBg.classList.remove('hidden');
         }
         
         // --- DYNAMIC RENDERING FUNCTIONS ---
@@ -315,18 +403,18 @@
             // Use Object.entries to iterate over roles in a defined order
             Object.entries(roleLabels).forEach(([key, label]) => {
                 const name = weekData.roles[key];
-                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-gray-300' : '';
+                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
                 rolesHtml += `
                     <div class="flex justify-between p-2 ${borderClass}">
-                        <span class="font-bold text-primary">${label}</span> 
-                        <span class="text-gray-700">${name}</span>
+                        <span class="font-bold text-secondary">${label}</span> 
+                        <span class="text-white">${name}</span>
                     </div>
                 `;
             });
 
             return `
                 <!-- Week ${weekData.week} -->
-                <div class="p-4 bg-white rounded-xl shadow-lg mb-4 border-t-4 border-primary">
+                <div class="p-4 rounded-xl shadow-lg mb-4 border-t-4 border-primary morph-glass-card">
                     <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
                         ${weekData.week} ပတ်
                     </div>
@@ -365,7 +453,7 @@
         }
 
         /**
-         * Renders the summary table rows.
+         * Renders the summary table rows, now optimized for the glass effect.
          */
         function renderSummaryTable() {
             const tbody = document.getElementById('summary-tbody');
@@ -373,17 +461,17 @@
 
             let summaryHtml = '';
             scheduleData.forEach((weekData, index) => {
-                // Determine alternating row color
-                const rowClass = index % 2 === 0 ? 'bg-gray-50' : '';
+                // Use subtle, alternating transparent backgrounds for the glass effect
+                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
                 
-                // Note: The summary table only includes Chairperson, Scripture, Praise, and Fullness Prayer.
                 summaryHtml += `
-                    <tr class="${rowClass}">
-                        <td>${weekData.week} ပတ်</td>
-                        <td>${weekData.roles.chairperson}</td>
-                        <td>${weekData.roles.scripture}</td>
-                        <td>${weekData.roles.praise}</td>
-                        <td>${weekData.roles.fullness}</td>
+                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
+                        <td class="p-3">${weekData.week} ပတ်</td>
+                        <td class="p-3">${weekData.roles.chairperson}</td>
+                        <td class="p-3">${weekData.roles.scripture}</td>
+                        <td class="p-3">${weekData.roles.praise}</td>
+                        <td class="p-3">${weekData.roles.offering}</td> 
+                        <td class="p-3">${weekData.roles.fullness}</td>
                     </tr>
                 `;
             });
@@ -413,13 +501,15 @@
 
             // Update active tab button style
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
-                btn.classList.add('bg-white', 'text-primary', 'shadow-md');
+                // Ensure inactive buttons use the neutral transparent background
+                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
+                btn.classList.add('bg-white/30', 'shadow-md'); 
                 
                 // Check if the button's data-target matches the current viewId
                 if (btn.getAttribute('data-target') === viewId) {
-                    btn.classList.add('active-tab', 'bg-primary', 'text-white', 'shadow-xl');
-                    btn.classList.remove('bg-white', 'text-primary', 'shadow-md');
+                    // Active button uses the solid primary color
+                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
+                    btn.classList.remove('bg-white/30', 'shadow-md');
                 }
             });
         }
@@ -449,12 +539,9 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if authenticated in localStorage. 
             if (localStorage.getItem(STORAGE_KEY) === 'true') {
-                // If authenticated, immediately initialize and show the content
                 initAppContent();
-            } else {
-                // Otherwise, the login screen is visible by default (via HTML classes)
-                // and the main content is hidden, waiting for login.
             }
         });
     </script>
