@@ -36,25 +36,30 @@
         .mobile-tabs::-webkit-scrollbar { display: none; }
         .mobile-tabs { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 1. LOGIN PAGE BACKGROUND*/
+        /* 1. LOGIN PAGE BACKGROUND (Hidden - Christmas Theme) */
         #login-bg-image {
-            background-image: url('https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/login.png');
-            filter: blur(5px) brightness(0.7); /* Apply blur and darken */
+            /* Now hidden by default, but keeping the Christmas image for historical accuracy */
+            background-image: url('https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/main.webp');
+            filter: blur(0px) brightness(0); /* Apply blur and darken */
+            
         }
         
-        /* 2. MAIN PAGE BACKGROUND*/
+        /* 2. MAIN PAGE BACKGROUND (Visible by Default - Christmas Theme) */
         #main-bg-image {
-            /* Placeholder for Unsplash "Merry Christmas" theme - change this URL to a direct image if available */
-            background-image: url('https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/main.png'); 
-            filter: blur(5px) brightness(0.7); /* Apply blur and darken */
+            background-image: url('https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/main.webp'); 
+            filter: blur(0px) brightness(0.7); /* Apply blur and darken */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* This locks the background */
         }
         
         /* Morph Glass Styles */
         .morph-glass {
             /* General Glass Effect */
             background: rgba(255, 255, 255, 0.1); /* Light backdrop */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             /* Red/Green Highlights for Eyecatching Effect */
             box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3), 0 -4px 20px rgba(255, 0, 0, 0.3);
@@ -78,12 +83,13 @@
 <body class="min-h-screen p-4 md:p-8 font-sans">
     
     <!-- BACKGROUND DIVS (Fixed position, low z-index) -->
-    <div id="login-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0"></div>
-    <div id="main-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0 hidden"></div>
+    <!-- The Main background is now visible by default -->
+    <div id="login-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0 hidden"></div>
+    <div id="main-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0"></div>
     <!-- END BACKGROUND DIVS -->
 
-    <!-- LOGIN SCREEN (Relative position, high z-index) -->
-    <div id="login-screen" class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <!-- LOGIN SCREEN (Hidden by default) -->
+    <div id="login-screen" class="relative z-10 flex items-center justify-center min-h-screen p-4 hidden">
         <div class="w-full max-w-sm p-8 rounded-xl text-center border-t-4 border-primary morph-glass-card shadow-xl">
             <h1 class="text-3xl font-extrabold text-white mb-4">
                 အစီစဉ်
@@ -115,8 +121,8 @@
     </div>
     <!-- END LOGIN SCREEN -->
 
-    <!-- MAIN SCHEDULE CONTENT (Initially hidden, high z-index) -->
-    <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden hidden morph-glass relative z-10">
+    <!-- MAIN SCHEDULE CONTENT (Visible by default) -->
+    <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden morph-glass relative z-10">
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
@@ -270,17 +276,12 @@
         
         <!-- Footer Section (Adjusted for glass effect) -->
         <footer class="text-center p-4 bg-white/20 text-white text-xs rounded-b-xl border-t border-white/50">
-            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်း အစီစဉ်။ မင်္ဂလာရှိသော နေ့ဖြစ်ပါစေ။
-           ❤️ In Love of Jesus ❤️
+            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ <br>❤️ In Love of Jesus ❤️
         </footer>
     </div>
 
     <!-- JavaScript for Data Management and Rendering -->
     <script>
-        // --- AUTHENTICATION CONFIG ---
-        const CORRECT_PASSCODE = "kfcyouth2025";
-        const STORAGE_KEY = 'schedule_authenticated'; 
-
         // --- DATA STRUCTURE FOR EASY EXPANSION (UNCHANGED NAMES) ---
         const scheduleData = [
             { week: 1, month: 1, roles: {
@@ -318,7 +319,7 @@
             fullness: "ပြည့်စုံဆုတောင်းခြင်း",  
         };
 
-        // --- ACCORDION TOGGLE FUNCTION ---
+        // --- ACCORDION TOGGLE FUNCTION (UNCHANGED) ---
 
         /**
          * Toggles the visibility of a content section (Accordion).
@@ -348,50 +349,7 @@
         }
 
 
-        // --- AUTHENTICATION FUNCTIONS ---
-
-        /**
-         * Attempts to log in by validating the passcode.
-         * @param {Event} event - The form submission event.
-         */
-        function attemptLogin(event) {
-            event.preventDefault(); // Prevent form default submission
-            
-            const passcodeInput = document.getElementById('passcode-input');
-            const passcode = passcodeInput.value.trim();
-            const errorMessage = document.getElementById('error-message');
-            
-            if (passcode === CORRECT_PASSCODE) {
-                errorMessage.classList.add('hidden');
-                // Successful login
-                localStorage.setItem(STORAGE_KEY, 'true'); 
-                initAppContent();
-            } else {
-                errorMessage.textContent = "Passcode is incorrect. Please try again.";
-                errorMessage.classList.remove('hidden');
-                passcodeInput.value = ''; // Clear input on failure
-            }
-        }
-
-        /**
-         * Shows the main schedule content and hides the login screen, managing backgrounds.
-         */
-        function showScheduleContent() {
-            const loginScreen = document.getElementById('login-screen');
-            const scheduleContent = document.getElementById('schedule-content');
-            const loginBg = document.getElementById('login-bg-image');
-            const mainBg = document.getElementById('main-bg-image');
-            
-            // Hide the login screen, show the schedule
-            loginScreen.classList.add('hidden');
-            scheduleContent.classList.remove('hidden');
-            
-            // Switch backgrounds
-            loginBg.classList.add('hidden');
-            mainBg.classList.remove('hidden');
-        }
-        
-        // --- DYNAMIC RENDERING FUNCTIONS ---
+        // --- DYNAMIC RENDERING FUNCTIONS (UNCHANGED) ---
 
         /**
          * Generates the HTML for a single week's detailed view.
@@ -479,7 +437,7 @@
             tbody.innerHTML = summaryHtml;
         }
 
-        // --- TAB SWITCHING LOGIC ---
+        // --- TAB SWITCHING LOGIC (UNCHANGED) ---
 
         /**
          * Switches the view between different schedule sections (Month 1, Month 2, Summary).
@@ -515,7 +473,7 @@
         }
         
         /**
-         * Initializes the dynamic content and UI events after successful authentication.
+         * Initializes the dynamic content and UI events.
          */
         function initAppContent() {
             // 1. Render all dynamic sections using the structured data
@@ -532,17 +490,13 @@
                 });
             });
 
-            // 3. Show content and set initial tab state
-            showScheduleContent();
+            // 3. Set initial tab state
             showSchedule('month1');
         }
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if authenticated in localStorage. 
-            if (localStorage.getItem(STORAGE_KEY) === 'true') {
-                initAppContent();
-            }
+            initAppContent();
         });
     </script>
 </body>
