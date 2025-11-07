@@ -194,6 +194,16 @@
                             <strong class="text-secondary block mb-1">သဘာပတိ (Chairperson)</strong>
                             <div class="text-sm text-gray-200">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
                         </div>
+                        <!-- Role Item for Piano (NEW: Content updated to reflect removal of "Piano - ") -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">Piano</strong>
+                            <div class="text-sm text-gray-200">၀တ်ပြုကိုးကွယ်ရာတွင် တူရိယာတီးခတ်ခြင်း</div>
+                        </div>
+                        <!-- Role Item for ဒေသနာ (Renamed) -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">ဒေသနာ (Sermon/Program)</strong>
+                            <div class="text-sm text-gray-200">၀တ်ပြု၊ ဆုတောင်း၊ သက်သေခံခြင်း သို့မဟုတ် လူငယ်အစည်းအဝေးများ ဦးဆောင်ခြင်း</div>
+                        </div>
                         <!-- Role Item 2 -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
                             <strong class="text-secondary block mb-1">အပြန်လှန်ဖတ်ခြင်း (Scripture Reading)</strong>
@@ -254,11 +264,13 @@
                     <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
                     
                     <div class="p-4 rounded-xl shadow-lg overflow-x-auto morph-glass-card">
-                        <table class="w-full text-left border-collapse min-w-[700px] summary-table" id="summary-table">
+                        <table class="w-full text-left border-collapse min-w-[750px] summary-table" id="summary-table">
                             <thead>
                                 <tr>
                                     <th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>
                                     <th class="bg-primary text-white p-3">သဘာပတိ</th>
+                                    <th class="bg-primary text-white p-3">Piano</th>
+                                    <th class="bg-primary text-white p-3">ဒေသနာ</th> <!-- Renamed Header -->
                                     <th class="bg-primary text-white p-3">အပြန်လှန်ဖတ်ခြင်း</th>
                                     <th class="bg-primary text-white p-3">Solo ချီးမွမ်းခြင်း</th>
                                     <th class="bg-primary text-white p-3">အလှူငွေဆပ်ကပ်ခြင်း</th>
@@ -274,45 +286,66 @@
             </section>
         </div>
         
-        <!-- Footer Section (Adjusted for glass effect) -->
+        <!-- FOOTER SECTION (Updated to include background link) -->
         <footer class="text-center p-4 bg-white/20 text-white text-xs rounded-b-xl border-t border-white/50">
-            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ <br>❤️ In Love of Jesus ❤️
+            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>
+           <br>
+            ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ <br>
+            ❤️ In Love of Jesus ❤️
         </footer>
     </div>
 
     <!-- JavaScript for Data Management and Rendering -->
     <script>
-        // --- DATA STRUCTURE FOR EASY EXPANSION (UNCHANGED NAMES) ---
+        // --- DATA STRUCTURE FOR EASY EXPANSION (UNCHANGED) ---
         const scheduleData = [
             { week: 1, month: 1, roles: {
-                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau"
+                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau", 
+                piano: "Zami Shine",
+                additionalRole: "Sr. Dau Gyung"
             }},
             { week: 2, month: 1, roles: {
-                chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram"
+                chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram",
+                piano: "Hpa Rat Hkawn",
+                additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း" // Updated with <br>
             }},
             { week: 3, month: 1, roles: {
-                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan"
+                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan",
+                piano: "Zami Shine",
+                additionalRole: "Srm. Ah Dim"
             }},
             { week: 4, month: 1, roles: {
-                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine"
+                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine",
+                piano: "Hpa Rat Hkawn",
+                additionalRole: "Youth Meeting"
             }},
             { week: 5, month: 2, roles: {
-                chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine"
+                chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine",
+                piano: "Zami Shine",
+                additionalRole: "Sr. Dee Ram"
             }},
             { week: 6, month: 2, roles: {
-                chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai"
+                chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai",
+                piano: "Hpa Rat Hkawn",
+                additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း" // Updated with <br>
             }},
             { week: 7, month: 2, roles: {
-                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn"
+                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn",
+                piano: "Zami Shine",
+                additionalRole: "Srm. Ah Ning"
             }},
             { week: 8, month: 2, roles: {
-                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline"
+                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline",
+                piano: "Hpa Rat Hkawn",
+                additionalRole: "Youth Meeting"
             }},
         ];
 
-        // --- UPDATED ROLE LABELS FOR CONSISTENCY ---
+        // --- UPDATED ROLE LABELS FOR CONSISTENCY (additionalRole renamed to ဒေသနာ) ---
         const roleLabels = {
             chairperson: "သဘာပတိ",
+            piano: "Piano", 
+            additionalRole: "ဒေသနာ", // Renamed to ဒေသနာ
             scripture: "အပြန်လှန်ဖတ်ခြင်း", 
             praise: "Solo ချီးမွမ်းခြင်း",      
             offering: "အလှူငွေဆပ်ကပ်ခြင်း",  
@@ -349,7 +382,7 @@
         }
 
 
-        // --- DYNAMIC RENDERING FUNCTIONS (UNCHANGED) ---
+        // --- DYNAMIC RENDERING FUNCTIONS (UPDATED LOGIC FOR CARD SIZE AND ALIGNMENT) ---
 
         /**
          * Generates the HTML for a single week's detailed view.
@@ -360,10 +393,14 @@
             let rolesHtml = '';
             // Use Object.entries to iterate over roles in a defined order
             Object.entries(roleLabels).forEach(([key, label]) => {
-                const name = weekData.roles[key];
+                let name = weekData.roles[key];
+                
+                // No "ဒေသနာ -" prefix anywhere in the detailed view
+                
                 const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
                 rolesHtml += `
-                    <div class="flex justify-between p-2 ${borderClass}">
+                    <!-- Larger padding (p-3) and vertically centered (items-center) for neat alignment -->
+                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
                         <span class="font-bold text-secondary">${label}</span> 
                         <span class="text-white">${name}</span>
                     </div>
@@ -371,9 +408,10 @@
             });
 
             return `
-                <!-- Week ${weekData.week} -->
-                <div class="p-4 rounded-xl shadow-lg mb-4 border-t-4 border-primary morph-glass-card">
-                    <div class="text-center text-lg font-bold bg-primary text-white py-2 rounded-lg mb-3">
+                <!-- Week ${weekData.week} - Larger Card Style -->
+                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
+                    <!-- Increased size (text-xl) and padding (py-3) for the header -->
+                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
                         ${weekData.week} ပတ်
                     </div>
                     <div class="flex flex-col space-y-2">
@@ -384,7 +422,7 @@
         }
 
         /**
-         * Renders the schedule blocks for a given month.
+         * Renders the schedule blocks for a given month, now using a grid layout.
          * @param {number} month - The month number (1 or 2).
          * @param {string} containerId - The ID of the HTML container element.
          */
@@ -401,35 +439,45 @@
             // Clear existing content and inject new content
             const monthTitle = container.querySelector('div.text-center');
             container.innerHTML = ''; // Clear previous content
+            
+            // Re-insert the title
             if (monthTitle) {
                 container.appendChild(monthTitle);
             } else {
                  container.innerHTML = `<div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">${month === 1 ? 'ပထမ လ' : 'ဒုတိယ လ'}</div>`;
             }
 
-            container.insertAdjacentHTML('beforeend', monthHtml);
+            // Wrap the weekly blocks in a responsive grid container for neat alignment
+            const gridWrapper = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">${monthHtml}</div>`;
+            container.insertAdjacentHTML('beforeend', gridWrapper);
         }
 
         /**
-         * Renders the summary table rows, now optimized for the glass effect.
+         * Renders the summary table rows, dynamically including all roles defined in roleLabels.
+         * NOTE: Summary table values are intentionally kept as single lines for compact display, 
+         * but the data will include <br> tags now, which HTML tables will respect.
          */
         function renderSummaryTable() {
             const tbody = document.getElementById('summary-tbody');
             if (!tbody) return;
 
+            const roleKeys = Object.keys(roleLabels); // Get ordered keys
+
             let summaryHtml = '';
             scheduleData.forEach((weekData, index) => {
-                // Use subtle, alternating transparent backgrounds for the glass effect
                 const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
                 
+                let roleCells = '';
+                // Dynamically create <td>s based on the order in roleLabels
+                roleKeys.forEach(key => {
+                    let roleValue = weekData.roles[key] || '-';
+                    roleCells += `<td class="p-3">${roleValue}</td>`;
+                });
+
                 summaryHtml += `
                     <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
                         <td class="p-3">${weekData.week} ပတ်</td>
-                        <td class="p-3">${weekData.roles.chairperson}</td>
-                        <td class="p-3">${weekData.roles.scripture}</td>
-                        <td class="p-3">${weekData.roles.praise}</td>
-                        <td class="p-3">${weekData.roles.offering}</td> 
-                        <td class="p-3">${weekData.roles.fullness}</td>
+                        ${roleCells}
                     </tr>
                 `;
             });
