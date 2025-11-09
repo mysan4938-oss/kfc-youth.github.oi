@@ -22,314 +22,6 @@
             }
         }
     </script>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db, auth;
-        let authReady = false;
-        
-        // Data stores, populated from Firestore
-        let scheduleData = [];
-        let roleLabels = {};
-        let participants = { girls: [], boys: [] };
-
-        const DATA_PATH = `/artifacts/${appId}/public/data/youth_schedule`;
-        const DATA_DOC_ID = 'schedule_config';
-
-        setLogLevel('Debug');
-
-        // --- Firebase Setup and Authentication ---
-        async function setupFirebaseAndAuth() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        authReady = true;
-                        fetchScheduleData();
-                    } else {
-                        // This handles cases where sign-in fails or user logs out
-                        authReady = true;
-                        fetchScheduleData();
-                    }
-                });
-
-            } catch (error) {
-                console.error("Firebase setup or authentication failed:", error);
-                document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">Error loading application: ${error.message}</p>`;
-            }
-        }
-
-        // --- Firestore Data Fetching (Realtime) ---
-        function fetchScheduleData() {
-            if (!authReady || !db) return;
-
-            const docRef = doc(db, DATA_PATH, DATA_DOC_ID);
-
-            // Hide the schedule content and show loading state initially
-            document.getElementById('schedule-content').classList.add('hidden');
-            document.getElementById('loading-state').classList.remove('hidden');
-
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    // Update global data stores
-                    scheduleData = data.scheduleData || [];
-                    roleLabels = data.roleLabels || {};
-                    participants = data.participants || { girls: [], boys: [] };
-
-                    // Re-render UI with new data
-                    initAppContent(); 
-                    
-                    // Hide loading and show content
-                    document.getElementById('schedule-content').classList.remove('hidden');
-                    document.getElementById('loading-state').classList.add('hidden');
-                } else {
-                    // Document doesn't exist, show error or fallback if needed
-                    console.error("Schedule configuration document does not exist in Firestore.");
-                    document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">အစီအစဉ် ဒေတာကို မတွေ့ရှိပါ။ ကျေးဇူးပြု၍ စီမံခန့်ခွဲသူမှ ဒေတာထည့်သွင်းပါ။</p>`;
-                }
-            }, (error) => {
-                console.error("Error fetching real-time data:", error);
-                document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">ဒေတာရယူရာတွင် အမှားဖြစ်ပွား: ${error.message}</p>`;
-            });
-        }
-        
-        // --- ACCORDION TOGGLE FUNCTION (UNCHANGED) ---
-
-        /**
-         * Toggles the visibility of a content section (Accordion).
-         * Uses max-h classes for smooth CSS transition.
-         * @param {string} contentId - The ID of the content div to toggle.
-         * @param {HTMLElement} button - The button element that was clicked.
-         */
-        window.toggleSection = function(contentId, button) {
-            const content = document.getElementById(contentId);
-            // Check if the button exists before trying to query its child
-            const icon = button ? button.querySelector('span') : null;
-
-            if (content.classList.contains('max-h-0')) {
-                // Expand
-                content.classList.remove('max-h-0');
-                content.classList.add('max-h-screen'); 
-                if (icon) icon.classList.add('rotate-45'); 
-                // Add padding back for visual appeal
-                content.classList.add('pb-4', 'pt-2'); 
-            } else {
-                // Collapse
-                content.classList.remove('max-h-screen');
-                content.classList.add('max-h-0');
-                if (icon) icon.classList.remove('rotate-45');
-                content.classList.remove('pb-4', 'pt-2');
-            }
-        }
-
-
-        // --- DYNAMIC RENDERING FUNCTIONS (UPDATED TO USE GLOBAL DATA) ---
-        
-        /**
-         * Renders the participants list from the global 'participants' object.
-         */
-        function renderParticipants() {
-            const girlList = document.getElementById('girls-list');
-            const boyList = document.getElementById('boys-list');
-            
-            if (!girlList || !boyList) return;
-
-            // Render Girls List
-            girlList.innerHTML = participants.girls.map(name => 
-                `<li class="border-b border-white/30 py-1 text-sm">${name}</li>`
-            ).join('');
-
-            // Render Boys List
-            boyList.innerHTML = participants.boys.map(name => 
-                `<li class="border-b border-white/30 py-1 text-sm">${name}</li>`
-            ).join('');
-        }
-
-        /**
-         * Generates the HTML for a single week's detailed view.
-         * @param {Object} weekData - The data for the specific week.
-         * @returns {string} The HTML string for the week block.
-         */
-        function renderWeekBlock(weekData) {
-            let rolesHtml = '';
-            // Use roleLabels keys to ensure correct order
-            Object.keys(roleLabels).forEach(key => {
-                const label = roleLabels[key];
-                const name = weekData.roles[key] || '-';
-                
-                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
-                rolesHtml += `
-                    <!-- Larger padding (p-3) and vertically centered (items-center) for neat alignment -->
-                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
-                        <span class="font-bold text-secondary">${label}</span> 
-                        <span class="text-white">${name}</span>
-                    </div>
-                `;
-            });
-
-            return `
-                <!-- Week ${weekData.week} - Larger Card Style -->
-                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
-                    <!-- Increased size (text-xl) and padding (py-3) for the header -->
-                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
-                        ${weekData.week} ပတ်
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        ${rolesHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Renders the schedule blocks for a given month, now using a grid layout.
-         * @param {number} month - The month number (1 or 2).
-         * @param {string} containerId - The ID of the HTML container element.
-         */
-        function renderMonthlySchedule(month, containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            const weeks = scheduleData.filter(d => d.month === month);
-            let monthHtml = '';
-            weeks.forEach(weekData => {
-                monthHtml += renderWeekBlock(weekData);
-            });
-            
-            const monthTitleHtml = `<div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">${month === 1 ? 'ပထမ လ' : 'ဒုတိယ လ'}</div>`;
-
-            // Wrap the weekly blocks in a responsive grid container for neat alignment
-            const gridWrapper = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">${monthHtml}</div>`;
-            
-            container.innerHTML = monthTitleHtml + gridWrapper;
-        }
-
-        /**
-         * Renders the summary table rows, dynamically including all roles defined in roleLabels.
-         */
-        function renderSummaryTable() {
-            const tableHead = document.getElementById('summary-thead-row');
-            const tbody = document.getElementById('summary-tbody');
-            if (!tableHead || !tbody) return;
-            
-            // 1. Render Header Row dynamically
-            let headerHtml = `<th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>`;
-            const roleKeys = Object.keys(roleLabels); // Get ordered keys
-
-            roleKeys.forEach((key, index) => {
-                const label = roleLabels[key];
-                const roundedClass = index === roleKeys.length - 1 ? 'rounded-tr-lg' : '';
-                headerHtml += `<th class="bg-primary text-white p-3 ${roundedClass}">${label}</th>`;
-            });
-            tableHead.innerHTML = headerHtml;
-
-            // 2. Render Body Rows
-            let summaryHtml = '';
-            scheduleData.forEach((weekData, index) => {
-                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
-                
-                let roleCells = '';
-                // Dynamically create <td>s based on the order in roleLabels
-                roleKeys.forEach(key => {
-                    let roleValue = weekData.roles[key] || '-';
-                    roleCells += `<td class="p-3">${roleValue}</td>`;
-                });
-
-                summaryHtml += `
-                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
-                        <td class="p-3">${weekData.week} ပတ်</td>
-                        ${roleCells}
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = summaryHtml;
-        }
-
-        // --- TAB SWITCHING LOGIC (UNCHANGED) ---
-
-        /**
-         * Switches the view between different schedule sections (Month 1, Month 2, Summary).
-         * @param {string} viewId - The ID of the schedule view to show ('month1', 'month2', or 'summary').
-         */
-        function showSchedule(viewId) {
-            // Hide all views
-            document.querySelectorAll('.schedule-view').forEach(view => {
-                view.classList.add('hidden');
-                view.classList.remove('active-view');
-            });
-
-            // Show the selected view
-            const selectedView = document.getElementById(viewId);
-            if (selectedView) {
-                selectedView.classList.remove('hidden');
-                selectedView.classList.add('active-view');
-            }
-
-            // Update active tab button style
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                // Ensure inactive buttons use the neutral transparent background
-                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
-                btn.classList.add('bg-white/30', 'shadow-md'); 
-                
-                // Check if the button's data-target matches the current viewId
-                if (btn.getAttribute('data-target') === viewId) {
-                    // Active button uses the solid primary color
-                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
-                    btn.classList.remove('bg-white/30', 'shadow-md');
-                }
-            });
-        }
-        
-        /**
-         * Initializes the dynamic content and UI events.
-         */
-        function initAppContent() {
-            // 1. Render Participants
-            renderParticipants();
-
-            // 2. Render all dynamic sections using the structured data
-            renderMonthlySchedule(1, 'month1');
-            renderMonthlySchedule(2, 'month2');
-            renderSummaryTable();
-            
-            // 3. Setup event listeners for tabs (already done on DOMContentLoaded, just setting initial state)
-            showSchedule('month1');
-        }
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Setup tab events once
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const viewId = btn.getAttribute('data-target');
-                    showSchedule(viewId);
-                });
-            });
-
-            setupFirebaseAndAuth();
-        });
-    </script>
     <!-- Custom style for better font support and scrollbar hiding -->
     <style>
         /* BASE STYLES */
@@ -386,6 +78,17 @@
         /* General background utility for background divs */
         .bg-cover { background-size: cover; }
         .bg-center { background-position: center; }
+        
+        /* Loading Spinner Animation */
+        .spinner {
+            border-top-color: #3498db;
+            border-left-color: #3498db;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 font-sans">
@@ -395,6 +98,15 @@
     <div id="login-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0 hidden"></div>
     <div id="main-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0"></div>
     <!-- END BACKGROUND DIVS -->
+    
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+        <div class="flex flex-col items-center p-8 rounded-xl bg-white/10 backdrop-blur-md shadow-2xl">
+            <div class="spinner w-12 h-12 border-4 border-gray-200 border-solid rounded-full border-t-4 border-primary"></div>
+            <p class="mt-4 text-xl font-semibold text-white">ဒေတာများကို ဝန်ဆောင်မှုမှ ရယူနေပါသည်...</p>
+        </div>
+    </div>
+    <!-- END LOADING OVERLAY -->
 
     <!-- LOGIN SCREEN (Hidden by default) -->
     <div id="login-screen" class="relative z-10 flex items-center justify-center min-h-screen p-4 hidden">
@@ -428,64 +140,36 @@
         </div>
     </div>
     <!-- END LOGIN SCREEN -->
-    
-    <!-- LOADING STATE (New) -->
-    <div id="loading-state" class="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div class="text-center text-white">
-            <svg class="animate-spin h-8 w-8 text-white mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p>အစီအစဉ် ဒေတာများ ရယူနေပါသည်...</p>
-        </div>
-    </div>
 
     <!-- MAIN SCHEDULE CONTENT (Hidden until data loads) -->
     <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden morph-glass relative z-10 hidden">
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
-            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်းအစီစဉ် (၈ ပတ်)</h1>
-            <div class="text-lg opacity-90">Youth Worship Program Schedule</div>
+            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်းအစီစဉ်</h1>
+            <div class="text-lg opacity-90" id="program-subtitle">Youth Worship Program Schedule</div>
         </header>
         
         <div class="p-4 md:p-6 lg:p-8 text-white">
             
-            <!-- Participants Section (Collapsible - morph-glass-card applied) -->
+            <!-- Participants Section -->
             <section class="mb-8 rounded-xl shadow-inner overflow-hidden morph-glass-card">
                 <button class="w-full p-4 md:p-6 bg-white/20 hover:bg-white/30 transition duration-300 flex justify-between items-center" 
                         onclick="toggleSection('participants-content', this)">
                     <h2 class="text-xl md:text-2xl font-bold text-white">
-                        ဆောင်ရွက်မည့်သူများ (မိန်းကလေး / ယောင်္ကျားလေး)
+                        ဆောင်ရွက်မည့်သူများ
                     </h2>
                     <span class="text-2xl text-white transform transition-transform duration-300">+</span>
                 </button>
                 
                 <div id="participants-content" class="p-4 transition-all duration-500 max-h-0 overflow-hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
-                        <div class="p-4 rounded-lg shadow-md border border-white/40 morph-glass-card">
-                            <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
-                                မိန်းကလေး
-                            </h3>
-                            <ul id="girls-list" class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                                <!-- Data populated by JS/Firestore -->
-                            </ul>
-                        </div>
-                        
-                        <div class="p-4 rounded-lg shadow-md border border-white/40 morph-glass-card">
-                            <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
-                                ယောင်္ကျားလေး
-                            </h3>
-                            <ul id="boys-list" class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                                <!-- Data populated by JS/Firestore -->
-                            </ul>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="participants-list">
+                        <!-- Participants will be dynamically inserted here -->
                     </div>
                 </div>
             </section>
             
-            <!-- Roles Section (Collapsible - morph-glass-card applied) -->
+            <!-- Roles Section -->
             <section class="mb-8 rounded-xl shadow-inner overflow-hidden morph-glass-card">
                 <button class="w-full p-4 md:p-6 bg-white/20 hover:bg-white/30 transition duration-300 flex justify-between items-center"
                         onclick="toggleSection('roles-content', this)">
@@ -495,103 +179,30 @@
                     <span class="text-2xl text-white transform transition-transform duration-300">+</span>
                 </button>
                 <div id="roles-content" class="p-4 transition-all duration-500 max-h-0 overflow-hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Role Item 1: သဘာပတိ -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">သဘာပတိ (Chairperson)</strong>
-                            <div class="text-sm text-gray-200">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
-                        </div>
-                        <!-- Role Item for Piano -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">Piano</strong>
-                            <div class="text-sm text-gray-200">၀တ်ပြုကိုးကွယ်ရာတွင် တူရိယာတီးခတ်ခြင်း</div>
-                        </div>
-                        <!-- Role Item 2: အပြန်အလှန်ဖတ် (Scripture Reading) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">အပြန်အလှန်ဖတ် (Scripture Reading)</strong>
-                            <div class="text-sm text-gray-200">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
-                        </div>
-                        <!-- Role Item 3: Solo ချီးမွမ်း (Individual Praise) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">Solo ချီးမွမ်း (Individual Praise)</strong>
-                            <div class="text-sm text-gray-200">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
-                        </div>
-                        <!-- Role Item for ဒေသနာ (Renamed) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">ဒေသနာ (Sermon/Program)</strong>
-                            <div class="text-sm text-gray-200">၀တ်ပြု၊ ဆုတောင်း၊ သက်သေခံခြင်း သို့မဟုတ် လူငယ်အစည်းအဝေးများ ဦးဆောင်ခြင်း</div>
-                        </div>
-                        <!-- Role Item 4: အလှူငွေဆပ်ကပ် (Offering Collection) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">အလှူငွေဆပ်ကပ် (Offering Collection)</strong>
-                            <div class="text-sm text-gray-200">အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း</div>
-                        </div>
-                        <!-- Role Item for Announcements (UPDATED) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">ကြေညာချိန် (Announcement Time)</strong> 
-                            <div class="text-sm text-gray-200">အတွင်းရေးမှူးက အစည်းအဝေးဆိုင်ရာ ကိစ္စရပ်များ ကြော်ညာခြင်း</div>
-                        </div>
-                        <!-- Role Item 5: ပြည့်စုံဆုတောင်း (Prayer for Fullness) -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">ပြည့်စုံဆုတောင်း (Prayer for Fullness)</strong>
-                            <div class="text-sm text-gray-200">အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း</div>
-                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="roles-definitions">
+                        <!-- Role definitions will be dynamically inserted here -->
                     </div>
                 </div>
             </section>
             
-            <!-- Schedule Section (morph-glass-card applied) -->
+            <!-- Schedule Section -->
             <section class="mb-8 p-4 rounded-xl shadow-inner morph-glass-card">
                 <h2 class="text-xl md:text-2xl font-bold text-white border-b-2 border-white/50 pb-3 mb-4">
-                    အစီအစဉ် (၈ ပတ်)
+                    အစီအစဉ် ဇယား
                 </h2>
                 
                 <!-- Mobile Tabs (Background adjusted for glass effect) -->
-                <div class="flex overflow-x-auto bg-white/20 p-1.5 rounded-lg mb-4 mobile-tabs">
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 mr-2 bg-white/30 shadow-md" data-target="month1">
-                        လ ၁
-                    </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 mr-2 bg-white/30 shadow-md" data-target="month2">
-                        လ ၂
-                    </button>
-                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 bg-white/30 shadow-md" data-target="summary">
-                        အကျဉ်းချုပ်
-                    </button>
+                <div class="flex overflow-x-auto bg-white/20 p-1.5 rounded-lg mb-4 mobile-tabs" id="tab-controls">
+                    <!-- Tabs will be dynamically inserted here -->
                 </div>
                 
-                <!-- Month 1 Schedule (Generated by JS) -->
-                <div id="month1" class="schedule-view active-view">
-                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">ပထမ လ</div>
-                    <!-- Content will be injected here -->
-                </div>
-                
-                <!-- Month 2 Schedule (Generated by JS) -->
-                <div id="month2" class="schedule-view hidden">
-                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">ဒုတိယ လ</div>
-                    <!-- Content will be injected here -->
-                </div>
-                
-                <!-- Summary View (Generated by JS) -->
-                <div id="summary" class="schedule-view hidden">
-                    <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
-                    
-                    <div class="p-4 rounded-xl shadow-lg overflow-x-auto morph-glass-card">
-                        <!-- Updated: Summary Table Header will be generated dynamically based on roleLabels order -->
-                        <table class="w-full text-left border-collapse min-w-[900px] summary-table" id="summary-table">
-                            <thead>
-                                <tr id="summary-thead-row">
-                                    <!-- Header cells populated by JS -->
-                                </tr>
-                            </thead>
-                            <tbody id="summary-tbody">
-                                <!-- Summary content will be injected here -->
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Schedule Views (Container for Month 1, Month 2, Summary) -->
+                <div id="schedule-views-container">
+                    <!-- Schedule views will be dynamically inserted here -->
                 </div>
             </section>
             
-            <!-- Note Section (New: Highlighted as an Important Notice) -->
+            <!-- Note Section (No changes needed) -->
             <section class="mb-8 p-4 rounded-xl shadow-inner morph-glass-card border-l-4 border-yellow-400">
                 <h2 class="text-xl md:text-2xl font-bold text-yellow-300 border-b-2 border-yellow-400/50 pb-3 mb-4">
                     မှတ်ချက် (Notice)
@@ -607,8 +218,373 @@
             &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>
            <br>
             ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ <br>
-            ❤️ GOD BLESS YOU ❤️
+            ❤️ In Love of Jesus ❤️
         </footer>
     </div>
+
+    <!-- JavaScript for Data Management and Rendering -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- Firebase Setup ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+        let scheduleData = [];
+        let participantsData = { girls: [], boys: [] };
+        let roleLabels = {};
+        let months = []; // To store unique months from data
+
+        setLogLevel('Debug');
+        
+        // --- Firestore Path (Public Path used by Admin to write) ---
+        const PUBLIC_DOC_REF = () => doc(db, `/artifacts/${appId}/public/data/youth_schedule`, 'schedule_config');
+
+
+        // --- Authentication and Data Load ---
+
+        async function setupFirebaseAndLoadData() {
+            try {
+                document.getElementById('loading-overlay').classList.remove('hidden');
+
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Sign in anonymously for public read access
+                await signInAnonymously(auth);
+
+                // Load data
+                const docSnap = await getDoc(PUBLIC_DOC_REF());
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    scheduleData = data.scheduleData || [];
+                    participantsData = data.participants || { girls: [], boys: [] };
+                    roleLabels = data.roleLabels || {};
+                    
+                    // Determine unique months for tabs
+                    months = [...new Set(scheduleData.map(d => d.month))].sort((a, b) => a - b);
+                    
+                    initAppContent();
+                } else {
+                    console.error("No schedule configuration found in Firestore.");
+                    document.getElementById('program-subtitle').textContent = "ဒေတာ မတွေ့ပါ - No Data Found";
+                    // Still show content even if empty, but display error message
+                    initAppContent(true); 
+                }
+
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('schedule-content').classList.remove('hidden');
+
+
+            } catch (error) {
+                console.error("Error loading Firebase data:", error);
+                document.getElementById('loading-overlay').innerHTML = `
+                    <div class="p-8 rounded-xl bg-red-800/80 backdrop-blur-md shadow-2xl text-white text-center">
+                        <p class="text-xl font-bold mb-2">ဒေတာရယူရာတွင် အမှားဖြစ်ပွားပါသည်</p>
+                        <p class="text-sm">Firestore Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+
+        // --- UI Rendering Functions ---
+
+        function renderParticipantsSection(participants) {
+            const container = document.getElementById('participants-list');
+            let html = '';
+
+            const renderList = (title, list) => {
+                const listItems = list.map(name => 
+                    `<li class="border-b border-white/30 py-1 text-sm">${name}</li>`
+                ).join('');
+                
+                return `
+                    <div class="p-4 rounded-lg shadow-md border border-white/40 morph-glass-card">
+                        <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
+                            ${title}
+                        </h3>
+                        <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                            ${listItems}
+                        </ul>
+                    </div>
+                `;
+            };
+
+            html += renderList("မိန်းကလေး", participants.girls);
+            html += renderList("ယောင်္ကျားလေး", participants.boys);
+            container.innerHTML = html;
+        }
+
+        function renderRolesDefinitions(labels) {
+            const container = document.getElementById('roles-definitions');
+            let html = '';
+            
+            // Standard descriptions (can be customized if needed)
+            const descriptions = {
+                chairperson: "အစီအစဉ်ကို ဦးဆောင်ခြင်း",
+                piano: "၀တ်ပြုကိုးကွယ်ရာတွင် တူရိယာတီးခတ်ခြင်း",
+                scripture: "သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း",
+                praise: "တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း",
+                offering: "အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း",
+                announcement: "လိုအပ်သည့် သတင်းအချက်အလက်များကို ကြေညာခြင်း",
+                fullness: "အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း",
+                additionalRole: "၀တ်ပြု၊ ဆုတောင်း၊ သက်သေခံခြင်း သို့မဟုတ် အစည်းအဝေးများ ဦးဆောင်ခြင်း",
+            };
+            
+            Object.entries(labels).forEach(([key, label]) => {
+                const description = descriptions[key] || "လုပ်ငန်းတာဝန်များ ထမ်းဆောင်ခြင်း";
+                
+                html += `
+                    <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                        <strong class="text-secondary block mb-1">${label}</strong>
+                        <div class="text-sm text-gray-200">${description}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderWeekBlock(weekData) {
+            let rolesHtml = '';
+            // Use Object.entries to iterate over roles in the order defined in roleLabels
+            Object.entries(roleLabels).forEach(([key, label]) => {
+                let name = weekData.roles[key] || '-';
+                
+                // Remove 'ခြင်း' and update label for consistency
+                const displayLabel = label.endsWith('ခြင်း') ? label.slice(0, -3) : label;
+
+                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
+                rolesHtml += `
+                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
+                        <span class="font-bold text-secondary">${displayLabel}</span> 
+                        <span class="text-white">${name}</span>
+                    </div>
+                `;
+            });
+
+            return `
+                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
+                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
+                        ${weekData.week} ပတ်
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                        ${rolesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMonthlySchedule(month) {
+            const container = document.getElementById('schedule-views-container');
+            const containerId = `month${month}`;
+            
+            // Check if view already exists
+            let monthView = document.getElementById(containerId);
+            if (!monthView) {
+                monthView = document.createElement('div');
+                monthView.id = containerId;
+                monthView.className = 'schedule-view hidden';
+                container.appendChild(monthView);
+            }
+
+            const weeks = scheduleData.filter(d => d.month === month);
+            let monthHtml = '';
+            weeks.forEach(weekData => {
+                monthHtml += renderWeekBlock(weekData);
+            });
+            
+            monthView.innerHTML = `
+                <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">
+                    ${month} လ
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    ${monthHtml}
+                </div>
+            `;
+            return monthView;
+        }
+
+        function renderSummaryTable() {
+            const container = document.getElementById('schedule-views-container');
+            let summaryView = document.getElementById('summary');
+            if (!summaryView) {
+                summaryView = document.createElement('div');
+                summaryView.id = 'summary';
+                summaryView.className = 'schedule-view hidden';
+                container.appendChild(summaryView);
+            }
+            
+            const roleKeys = Object.keys(roleLabels); 
+            
+            // Generate Table Header dynamically
+            const headerCells = roleKeys.map(key => {
+                const label = roleLabels[key].endsWith('ခြင်း') ? roleLabels[key].slice(0, -3) : roleLabels[key];
+                return `<th class="bg-primary text-white p-3">${label}</th>`;
+            }).join('');
+
+            // Generate Table Body
+            let summaryHtml = '';
+            scheduleData.forEach((weekData, index) => {
+                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
+                
+                let roleCells = '';
+                roleKeys.forEach(key => {
+                    // Use innerHTML to allow <br> tags
+                    const roleValue = weekData.roles[key] || '-';
+                    roleCells += `<td class="p-3">${roleValue}</td>`;
+                });
+
+                summaryHtml += `
+                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
+                        <td class="p-3">${weekData.week} ပတ်</td>
+                        ${roleCells}
+                    </tr>
+                `;
+            });
+
+            summaryView.innerHTML = `
+                <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
+                <div class="p-4 rounded-xl shadow-lg overflow-x-auto morph-glass-card">
+                    <table class="w-full text-left border-collapse min-w-[750px] summary-table">
+                        <thead>
+                            <tr>
+                                <th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>
+                                ${headerCells}
+                                <th class="bg-primary text-white p-3 rounded-tr-lg"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-tbody">
+                            ${summaryHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            return summaryView;
+        }
+
+        function renderTabs() {
+            const tabControls = document.getElementById('tab-controls');
+            let tabsHtml = '';
+
+            // Render Month Tabs
+            months.forEach(month => {
+                tabsHtml += `
+                    <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 mr-2 bg-white/30 shadow-md" data-target="month${month}">
+                        လ ${month}
+                    </button>
+                `;
+            });
+            
+            // Render Summary Tab
+            tabsHtml += `
+                <button class="tab-btn p-3 px-4 min-w-[70px] text-center rounded-md font-semibold text-white transition duration-300 bg-white/30 shadow-md" data-target="summary">
+                    အကျဉ်းချုပ်
+                </button>
+            `;
+            
+            tabControls.innerHTML = tabsHtml;
+        }
+
+        // --- Core UI Logic ---
+
+        /**
+         * Toggles the visibility of a content section (Accordion).
+         */
+        window.toggleSection = function(contentId, button) {
+            const content = document.getElementById(contentId);
+            const icon = button.querySelector('span');
+
+            if (content.classList.contains('max-h-0')) {
+                // Expand
+                content.classList.remove('max-h-0');
+                content.classList.add('max-h-screen'); 
+                icon.classList.add('rotate-45'); 
+                content.classList.add('pb-4', 'pt-2'); 
+            } else {
+                // Collapse
+                content.classList.remove('max-h-screen');
+                content.classList.add('max-h-0');
+                icon.classList.remove('rotate-45');
+                content.classList.remove('pb-4', 'pt-2');
+            }
+        }
+        
+        /**
+         * Switches the view between different schedule sections.
+         */
+        function showSchedule(viewId) {
+            document.querySelectorAll('.schedule-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+
+            const selectedView = document.getElementById(viewId);
+            if (selectedView) {
+                selectedView.classList.remove('hidden');
+            }
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
+                btn.classList.add('bg-white/30', 'shadow-md'); 
+                
+                if (btn.getAttribute('data-target') === viewId) {
+                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
+                    btn.classList.remove('bg-white/30', 'shadow-md');
+                }
+            });
+        }
+        
+        /**
+         * Initializes the dynamic content and UI events after data is loaded.
+         */
+        function initAppContent(isError = false) {
+            if (isError || scheduleData.length === 0) {
+                 // Handle empty or error state visually
+                 document.getElementById('program-subtitle').textContent = "အစီအစဉ် ဒေတာ မရှိသေးပါ";
+                 document.getElementById('schedule-views-container').innerHTML = `
+                    <p class="text-center text-xl p-8 bg-white/10 rounded-xl text-red-300">
+                        စီမံခန့်ခွဲရေး စာမျက်နှာမှ ဒေတာများ ထည့်သွင်းပေးရန် လိုအပ်ပါသည်
+                    </p>
+                 `;
+                 renderParticipantsSection(participantsData);
+                 renderRolesDefinitions(roleLabels);
+                 return;
+            }
+            
+            // 1. Render all dynamic sections
+            renderParticipantsSection(participantsData);
+            renderRolesDefinitions(roleLabels);
+            renderTabs();
+            
+            // Render monthly views and summary
+            months.forEach(month => renderMonthlySchedule(month));
+            renderSummaryTable();
+            
+            // 2. Setup event listeners for tabs
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const viewId = btn.getAttribute('data-target');
+                    showSchedule(viewId);
+                });
+            });
+
+            // 3. Set initial tab state
+            const initialTab = months.length > 0 ? `month${months[0]}` : 'summary';
+            showSchedule(initialTab);
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', setupFirebaseAndLoadData);
+    </script>
 </body>
 </html>
+
+
