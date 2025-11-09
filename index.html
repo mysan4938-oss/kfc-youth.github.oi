@@ -22,6 +22,314 @@
             }
         }
     </script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth;
+        let authReady = false;
+        
+        // Data stores, populated from Firestore
+        let scheduleData = [];
+        let roleLabels = {};
+        let participants = { girls: [], boys: [] };
+
+        const DATA_PATH = `/artifacts/${appId}/public/data/youth_schedule`;
+        const DATA_DOC_ID = 'schedule_config';
+
+        setLogLevel('Debug');
+
+        // --- Firebase Setup and Authentication ---
+        async function setupFirebaseAndAuth() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        authReady = true;
+                        fetchScheduleData();
+                    } else {
+                        // This handles cases where sign-in fails or user logs out
+                        authReady = true;
+                        fetchScheduleData();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase setup or authentication failed:", error);
+                document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">Error loading application: ${error.message}</p>`;
+            }
+        }
+
+        // --- Firestore Data Fetching (Realtime) ---
+        function fetchScheduleData() {
+            if (!authReady || !db) return;
+
+            const docRef = doc(db, DATA_PATH, DATA_DOC_ID);
+
+            // Hide the schedule content and show loading state initially
+            document.getElementById('schedule-content').classList.add('hidden');
+            document.getElementById('loading-state').classList.remove('hidden');
+
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Update global data stores
+                    scheduleData = data.scheduleData || [];
+                    roleLabels = data.roleLabels || {};
+                    participants = data.participants || { girls: [], boys: [] };
+
+                    // Re-render UI with new data
+                    initAppContent(); 
+                    
+                    // Hide loading and show content
+                    document.getElementById('schedule-content').classList.remove('hidden');
+                    document.getElementById('loading-state').classList.add('hidden');
+                } else {
+                    // Document doesn't exist, show error or fallback if needed
+                    console.error("Schedule configuration document does not exist in Firestore.");
+                    document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">အစီအစဉ် ဒေတာကို မတွေ့ရှိပါ။ ကျေးဇူးပြု၍ စီမံခန့်ခွဲသူမှ ဒေတာထည့်သွင်းပါ။</p>`;
+                }
+            }, (error) => {
+                console.error("Error fetching real-time data:", error);
+                document.getElementById('schedule-content').innerHTML = `<p class="text-red-400 p-8">ဒေတာရယူရာတွင် အမှားဖြစ်ပွား: ${error.message}</p>`;
+            });
+        }
+        
+        // --- ACCORDION TOGGLE FUNCTION (UNCHANGED) ---
+
+        /**
+         * Toggles the visibility of a content section (Accordion).
+         * Uses max-h classes for smooth CSS transition.
+         * @param {string} contentId - The ID of the content div to toggle.
+         * @param {HTMLElement} button - The button element that was clicked.
+         */
+        window.toggleSection = function(contentId, button) {
+            const content = document.getElementById(contentId);
+            // Check if the button exists before trying to query its child
+            const icon = button ? button.querySelector('span') : null;
+
+            if (content.classList.contains('max-h-0')) {
+                // Expand
+                content.classList.remove('max-h-0');
+                content.classList.add('max-h-screen'); 
+                if (icon) icon.classList.add('rotate-45'); 
+                // Add padding back for visual appeal
+                content.classList.add('pb-4', 'pt-2'); 
+            } else {
+                // Collapse
+                content.classList.remove('max-h-screen');
+                content.classList.add('max-h-0');
+                if (icon) icon.classList.remove('rotate-45');
+                content.classList.remove('pb-4', 'pt-2');
+            }
+        }
+
+
+        // --- DYNAMIC RENDERING FUNCTIONS (UPDATED TO USE GLOBAL DATA) ---
+        
+        /**
+         * Renders the participants list from the global 'participants' object.
+         */
+        function renderParticipants() {
+            const girlList = document.getElementById('girls-list');
+            const boyList = document.getElementById('boys-list');
+            
+            if (!girlList || !boyList) return;
+
+            // Render Girls List
+            girlList.innerHTML = participants.girls.map(name => 
+                `<li class="border-b border-white/30 py-1 text-sm">${name}</li>`
+            ).join('');
+
+            // Render Boys List
+            boyList.innerHTML = participants.boys.map(name => 
+                `<li class="border-b border-white/30 py-1 text-sm">${name}</li>`
+            ).join('');
+        }
+
+        /**
+         * Generates the HTML for a single week's detailed view.
+         * @param {Object} weekData - The data for the specific week.
+         * @returns {string} The HTML string for the week block.
+         */
+        function renderWeekBlock(weekData) {
+            let rolesHtml = '';
+            // Use roleLabels keys to ensure correct order
+            Object.keys(roleLabels).forEach(key => {
+                const label = roleLabels[key];
+                const name = weekData.roles[key] || '-';
+                
+                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
+                rolesHtml += `
+                    <!-- Larger padding (p-3) and vertically centered (items-center) for neat alignment -->
+                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
+                        <span class="font-bold text-secondary">${label}</span> 
+                        <span class="text-white">${name}</span>
+                    </div>
+                `;
+            });
+
+            return `
+                <!-- Week ${weekData.week} - Larger Card Style -->
+                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
+                    <!-- Increased size (text-xl) and padding (py-3) for the header -->
+                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
+                        ${weekData.week} ပတ်
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                        ${rolesHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Renders the schedule blocks for a given month, now using a grid layout.
+         * @param {number} month - The month number (1 or 2).
+         * @param {string} containerId - The ID of the HTML container element.
+         */
+        function renderMonthlySchedule(month, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const weeks = scheduleData.filter(d => d.month === month);
+            let monthHtml = '';
+            weeks.forEach(weekData => {
+                monthHtml += renderWeekBlock(weekData);
+            });
+            
+            const monthTitleHtml = `<div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">${month === 1 ? 'ပထမ လ' : 'ဒုတိယ လ'}</div>`;
+
+            // Wrap the weekly blocks in a responsive grid container for neat alignment
+            const gridWrapper = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">${monthHtml}</div>`;
+            
+            container.innerHTML = monthTitleHtml + gridWrapper;
+        }
+
+        /**
+         * Renders the summary table rows, dynamically including all roles defined in roleLabels.
+         */
+        function renderSummaryTable() {
+            const tableHead = document.getElementById('summary-thead-row');
+            const tbody = document.getElementById('summary-tbody');
+            if (!tableHead || !tbody) return;
+            
+            // 1. Render Header Row dynamically
+            let headerHtml = `<th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>`;
+            const roleKeys = Object.keys(roleLabels); // Get ordered keys
+
+            roleKeys.forEach((key, index) => {
+                const label = roleLabels[key];
+                const roundedClass = index === roleKeys.length - 1 ? 'rounded-tr-lg' : '';
+                headerHtml += `<th class="bg-primary text-white p-3 ${roundedClass}">${label}</th>`;
+            });
+            tableHead.innerHTML = headerHtml;
+
+            // 2. Render Body Rows
+            let summaryHtml = '';
+            scheduleData.forEach((weekData, index) => {
+                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
+                
+                let roleCells = '';
+                // Dynamically create <td>s based on the order in roleLabels
+                roleKeys.forEach(key => {
+                    let roleValue = weekData.roles[key] || '-';
+                    roleCells += `<td class="p-3">${roleValue}</td>`;
+                });
+
+                summaryHtml += `
+                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
+                        <td class="p-3">${weekData.week} ပတ်</td>
+                        ${roleCells}
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = summaryHtml;
+        }
+
+        // --- TAB SWITCHING LOGIC (UNCHANGED) ---
+
+        /**
+         * Switches the view between different schedule sections (Month 1, Month 2, Summary).
+         * @param {string} viewId - The ID of the schedule view to show ('month1', 'month2', or 'summary').
+         */
+        function showSchedule(viewId) {
+            // Hide all views
+            document.querySelectorAll('.schedule-view').forEach(view => {
+                view.classList.add('hidden');
+                view.classList.remove('active-view');
+            });
+
+            // Show the selected view
+            const selectedView = document.getElementById(viewId);
+            if (selectedView) {
+                selectedView.classList.remove('hidden');
+                selectedView.classList.add('active-view');
+            }
+
+            // Update active tab button style
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                // Ensure inactive buttons use the neutral transparent background
+                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
+                btn.classList.add('bg-white/30', 'shadow-md'); 
+                
+                // Check if the button's data-target matches the current viewId
+                if (btn.getAttribute('data-target') === viewId) {
+                    // Active button uses the solid primary color
+                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
+                    btn.classList.remove('bg-white/30', 'shadow-md');
+                }
+            });
+        }
+        
+        /**
+         * Initializes the dynamic content and UI events.
+         */
+        function initAppContent() {
+            // 1. Render Participants
+            renderParticipants();
+
+            // 2. Render all dynamic sections using the structured data
+            renderMonthlySchedule(1, 'month1');
+            renderMonthlySchedule(2, 'month2');
+            renderSummaryTable();
+            
+            // 3. Setup event listeners for tabs (already done on DOMContentLoaded, just setting initial state)
+            showSchedule('month1');
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup tab events once
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const viewId = btn.getAttribute('data-target');
+                    showSchedule(viewId);
+                });
+            });
+
+            setupFirebaseAndAuth();
+        });
+    </script>
     <!-- Custom style for better font support and scrollbar hiding -->
     <style>
         /* BASE STYLES */
@@ -120,9 +428,20 @@
         </div>
     </div>
     <!-- END LOGIN SCREEN -->
+    
+    <!-- LOADING STATE (New) -->
+    <div id="loading-state" class="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div class="text-center text-white">
+            <svg class="animate-spin h-8 w-8 text-white mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p>အစီအစဉ် ဒေတာများ ရယူနေပါသည်...</p>
+        </div>
+    </div>
 
-    <!-- MAIN SCHEDULE CONTENT (Visible by default) -->
-    <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden morph-glass relative z-10">
+    <!-- MAIN SCHEDULE CONTENT (Hidden until data loads) -->
+    <div id="schedule-content" class="container max-w-4xl mx-auto rounded-xl overflow-hidden morph-glass relative z-10 hidden">
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
@@ -149,15 +468,8 @@
                             <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
                                 မိန်းကလေး
                             </h3>
-                            <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                                <li class="border-b border-white/30 py-1 text-sm">May Lat Lunn</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Htoi Tsin Pan</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Zami Shar</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Mi Mi Shar</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Zami Shine</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Pan Ra</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Hpa Rat Hkawn</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Caroline</li>
+                            <ul id="girls-list" class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                                <!-- Data populated by JS/Firestore -->
                             </ul>
                         </div>
                         
@@ -165,13 +477,8 @@
                             <h3 class="text-lg font-semibold text-white text-center border-b border-dashed border-white/50 pb-2 mb-3">
                                 ယောင်္ကျားလေး
                             </h3>
-                            <ul class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
-                                <li class="border-b border-white/30 py-1 text-sm">Tu Mai</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Seng Awng</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Ah Dau</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Dee Bine</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Benjamin</li>
-                                <li class="border-b border-white/30 py-1 text-sm">Shin Ram</li>
+                            <ul id="boys-list" class="grid grid-cols-2 gap-x-4 gap-y-2 list-none p-0">
+                                <!-- Data populated by JS/Firestore -->
                             </ul>
                         </div>
                     </div>
@@ -189,39 +496,44 @@
                 </button>
                 <div id="roles-content" class="p-4 transition-all duration-500 max-h-0 overflow-hidden">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Role Item 1 -->
+                        <!-- Role Item 1: သဘာပတိ -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
                             <strong class="text-secondary block mb-1">သဘာပတိ (Chairperson)</strong>
                             <div class="text-sm text-gray-200">အစီအစဉ်ကို ဦးဆောင်ခြင်း</div>
                         </div>
-                        <!-- Role Item for Piano (NEW: Content updated to reflect removal of "Piano - ") -->
+                        <!-- Role Item for Piano -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
                             <strong class="text-secondary block mb-1">Piano</strong>
                             <div class="text-sm text-gray-200">၀တ်ပြုကိုးကွယ်ရာတွင် တူရိယာတီးခတ်ခြင်း</div>
+                        </div>
+                        <!-- Role Item 2: အပြန်အလှန်ဖတ် (Scripture Reading) -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">အပြန်အလှန်ဖတ် (Scripture Reading)</strong>
+                            <div class="text-sm text-gray-200">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
+                        </div>
+                        <!-- Role Item 3: Solo ချီးမွမ်း (Individual Praise) -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">Solo ချီးမွမ်း (Individual Praise)</strong>
+                            <div class="text-sm text-gray-200">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
                         </div>
                         <!-- Role Item for ဒေသနာ (Renamed) -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
                             <strong class="text-secondary block mb-1">ဒေသနာ (Sermon/Program)</strong>
                             <div class="text-sm text-gray-200">၀တ်ပြု၊ ဆုတောင်း၊ သက်သေခံခြင်း သို့မဟုတ် လူငယ်အစည်းအဝေးများ ဦးဆောင်ခြင်း</div>
                         </div>
-                        <!-- Role Item 2 -->
+                        <!-- Role Item 4: အလှူငွေဆပ်ကပ် (Offering Collection) -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">အပြန်လှန်ဖတ်ခြင်း (Scripture Reading)</strong>
-                            <div class="text-sm text-gray-200">သမ္မာကျမ်းစာကို အပြန်အလှန်ဖတ်ရှုခြင်း</div>
-                        </div>
-                        <!-- Role Item 3 -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">Solo ချီးမွမ်းခြင်း (Individual Praise)</strong>
-                            <div class="text-sm text-gray-200">တစ်ဦးတည်း သို့မဟုတ် အဖွဲ့လိုက် ချီးမွမ်းခြင်း</div>
-                        </div>
-                        <!-- Role Item 4 -->
-                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">အလှူငွေဆပ်ကပ်ခြင်း (Offering Collection)</strong>
+                            <strong class="text-secondary block mb-1">အလှူငွေဆပ်ကပ် (Offering Collection)</strong>
                             <div class="text-sm text-gray-200">အလှူငွေများကောက်ခံပြီး ဆုတောင်းပေးခြင်း</div>
                         </div>
-                        <!-- Role Item 5 -->
+                        <!-- Role Item for Announcements (UPDATED) -->
                         <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
-                            <strong class="text-secondary block mb-1">ပြည့်စုံဆုတောင်းခြင်း (Prayer for Fullness)</strong>
+                            <strong class="text-secondary block mb-1">ကြေညာချိန် (Announcement Time)</strong> 
+                            <div class="text-sm text-gray-200">အတွင်းရေးမှူးက အစည်းအဝေးဆိုင်ရာ ကိစ္စရပ်များ ကြော်ညာခြင်း</div>
+                        </div>
+                        <!-- Role Item 5: ပြည့်စုံဆုတောင်း (Prayer for Fullness) -->
+                        <div class="p-3 rounded-lg shadow-sm border-l-4 border-secondary morph-glass-card">
+                            <strong class="text-secondary block mb-1">ပြည့်စုံဆုတောင်း (Prayer for Fullness)</strong>
                             <div class="text-sm text-gray-200">အစီအစဉ်အဆုံးတွင် ဆုတောင်းပေးခြင်း</div>
                         </div>
                     </div>
@@ -264,17 +576,11 @@
                     <div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">အကျဉ်းချုပ်</div>
                     
                     <div class="p-4 rounded-xl shadow-lg overflow-x-auto morph-glass-card">
-                        <table class="w-full text-left border-collapse min-w-[750px] summary-table" id="summary-table">
+                        <!-- Updated: Summary Table Header will be generated dynamically based on roleLabels order -->
+                        <table class="w-full text-left border-collapse min-w-[900px] summary-table" id="summary-table">
                             <thead>
-                                <tr>
-                                    <th class="bg-primary text-white p-3 rounded-tl-lg">အပတ်</th>
-                                    <th class="bg-primary text-white p-3">သဘာပတိ</th>
-                                    <th class="bg-primary text-white p-3">Piano</th>
-                                    <th class="bg-primary text-white p-3">ဒေသနာ</th> <!-- Renamed Header -->
-                                    <th class="bg-primary text-white p-3">အပြန်လှန်ဖတ်ခြင်း</th>
-                                    <th class="bg-primary text-white p-3">Solo ချီးမွမ်းခြင်း</th>
-                                    <th class="bg-primary text-white p-3">အလှူငွေဆပ်ကပ်ခြင်း</th>
-                                    <th class="bg-primary text-white p-3 rounded-tr-lg">ပြည့်စုံဆုတောင်းခြင်း</th>
+                                <tr id="summary-thead-row">
+                                    <!-- Header cells populated by JS -->
                                 </tr>
                             </thead>
                             <tbody id="summary-tbody">
@@ -301,262 +607,8 @@
             &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>
            <br>
             ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ <br>
-            ❤️ In Love of Jesus ❤️
+            ❤️ GOD BLESS YOU ❤️
         </footer>
     </div>
-
-    <!-- JavaScript for Data Management and Rendering -->
-    <script>
-        // --- DATA STRUCTURE FOR EASY EXPANSION (UNCHANGED) ---
-        const scheduleData = [
-            { week: 1, month: 1, roles: {
-                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau", 
-                piano: "Zami Shine",
-                additionalRole: "Sr. Dau Gyung"
-            }},
-            { week: 2, month: 1, roles: {
-                chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း" // Updated with <br>
-            }},
-            { week: 3, month: 1, roles: {
-                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan",
-                piano: "Zami Shine",
-                additionalRole: "Srm. Ah Dim"
-            }},
-            { week: 4, month: 1, roles: {
-                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "Youth Meeting"
-            }},
-            { week: 5, month: 2, roles: {
-                chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine",
-                piano: "Zami Shine",
-                additionalRole: "Sr. Dee Ram"
-            }},
-            { week: 6, month: 2, roles: {
-                chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း" // Updated with <br>
-            }},
-            { week: 7, month: 2, roles: {
-                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn",
-                piano: "Zami Shine",
-                additionalRole: "Srm. Ah Ning"
-            }},
-            { week: 8, month: 2, roles: {
-                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "Youth Meeting"
-            }},
-        ];
-
-        // --- UPDATED ROLE LABELS FOR CONSISTENCY (additionalRole renamed to ဒေသနာ) ---
-        const roleLabels = {
-            chairperson: "သဘာပတိ",
-            piano: "Piano", 
-            additionalRole: "ဒေသနာ", // Renamed to ဒေသနာ
-            scripture: "အပြန်လှန်ဖတ်ခြင်း", 
-            praise: "Solo ချီးမွမ်းခြင်း",      
-            offering: "အလှူငွေဆပ်ကပ်ခြင်း",  
-            fullness: "ပြည့်စုံဆုတောင်းခြင်း",  
-        };
-
-        // --- ACCORDION TOGGLE FUNCTION (UNCHANGED) ---
-
-        /**
-         * Toggles the visibility of a content section (Accordion).
-         * Uses max-h classes for smooth CSS transition.
-         * @param {string} contentId - The ID of the content div to toggle.
-         * @param {HTMLElement} button - The button element that was clicked.
-         */
-        function toggleSection(contentId, button) {
-            const content = document.getElementById(contentId);
-            const icon = button.querySelector('span');
-
-            if (content.classList.contains('max-h-0')) {
-                // Expand
-                // Use max-h-screen for a large enough height to allow the content to show
-                content.classList.remove('max-h-0');
-                content.classList.add('max-h-screen'); 
-                icon.classList.add('rotate-45'); 
-                // Add padding back for visual appeal
-                content.classList.add('pb-4', 'pt-2'); 
-            } else {
-                // Collapse
-                content.classList.remove('max-h-screen');
-                content.classList.add('max-h-0');
-                icon.classList.remove('rotate-45');
-                content.classList.remove('pb-4', 'pt-2');
-            }
-        }
-
-
-        // --- DYNAMIC RENDERING FUNCTIONS (UPDATED LOGIC FOR CARD SIZE AND ALIGNMENT) ---
-
-        /**
-         * Generates the HTML for a single week's detailed view.
-         * @param {Object} weekData - The data for the specific week.
-         * @returns {string} The HTML string for the week block.
-         */
-        function renderWeekBlock(weekData) {
-            let rolesHtml = '';
-            // Use Object.entries to iterate over roles in a defined order
-            Object.entries(roleLabels).forEach(([key, label]) => {
-                let name = weekData.roles[key];
-                
-                // No "ဒေသနာ -" prefix anywhere in the detailed view
-                
-                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
-                rolesHtml += `
-                    <!-- Larger padding (p-3) and vertically centered (items-center) for neat alignment -->
-                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
-                        <span class="font-bold text-secondary">${label}</span> 
-                        <span class="text-white">${name}</span>
-                    </div>
-                `;
-            });
-
-            return `
-                <!-- Week ${weekData.week} - Larger Card Style -->
-                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
-                    <!-- Increased size (text-xl) and padding (py-3) for the header -->
-                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
-                        ${weekData.week} ပတ်
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        ${rolesHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Renders the schedule blocks for a given month, now using a grid layout.
-         * @param {number} month - The month number (1 or 2).
-         * @param {string} containerId - The ID of the HTML container element.
-         */
-        function renderMonthlySchedule(month, containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            const weeks = scheduleData.filter(d => d.month === month);
-            let monthHtml = '';
-            weeks.forEach(weekData => {
-                monthHtml += renderWeekBlock(weekData);
-            });
-            
-            // Clear existing content and inject new content
-            const monthTitle = container.querySelector('div.text-center');
-            container.innerHTML = ''; // Clear previous content
-            
-            // Re-insert the title
-            if (monthTitle) {
-                container.appendChild(monthTitle);
-            } else {
-                 container.innerHTML = `<div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">${month === 1 ? 'ပထမ လ' : 'ဒုတိယ လ'}</div>`;
-            }
-
-            // Wrap the weekly blocks in a responsive grid container for neat alignment
-            const gridWrapper = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">${monthHtml}</div>`;
-            container.insertAdjacentHTML('beforeend', gridWrapper);
-        }
-
-        /**
-         * Renders the summary table rows, dynamically including all roles defined in roleLabels.
-         * NOTE: Summary table values are intentionally kept as single lines for compact display, 
-         * but the data will include <br> tags now, which HTML tables will respect.
-         */
-        function renderSummaryTable() {
-            const tbody = document.getElementById('summary-tbody');
-            if (!tbody) return;
-
-            const roleKeys = Object.keys(roleLabels); // Get ordered keys
-
-            let summaryHtml = '';
-            scheduleData.forEach((weekData, index) => {
-                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
-                
-                let roleCells = '';
-                // Dynamically create <td>s based on the order in roleLabels
-                roleKeys.forEach(key => {
-                    let roleValue = weekData.roles[key] || '-';
-                    roleCells += `<td class="p-3">${roleValue}</td>`;
-                });
-
-                summaryHtml += `
-                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
-                        <td class="p-3">${weekData.week} ပတ်</td>
-                        ${roleCells}
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = summaryHtml;
-        }
-
-        // --- TAB SWITCHING LOGIC (UNCHANGED) ---
-
-        /**
-         * Switches the view between different schedule sections (Month 1, Month 2, Summary).
-         * @param {string} viewId - The ID of the schedule view to show ('month1', 'month2', or 'summary').
-         */
-        function showSchedule(viewId) {
-            // Hide all views
-            document.querySelectorAll('.schedule-view').forEach(view => {
-                view.classList.add('hidden');
-                view.classList.remove('active-view');
-            });
-
-            // Show the selected view
-            const selectedView = document.getElementById(viewId);
-            if (selectedView) {
-                selectedView.classList.remove('hidden');
-                selectedView.classList.add('active-view');
-            }
-
-            // Update active tab button style
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                // Ensure inactive buttons use the neutral transparent background
-                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
-                btn.classList.add('bg-white/30', 'shadow-md'); 
-                
-                // Check if the button's data-target matches the current viewId
-                if (btn.getAttribute('data-target') === viewId) {
-                    // Active button uses the solid primary color
-                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
-                    btn.classList.remove('bg-white/30', 'shadow-md');
-                }
-            });
-        }
-        
-        /**
-         * Initializes the dynamic content and UI events.
-         */
-        function initAppContent() {
-            // 1. Render all dynamic sections using the structured data
-            renderMonthlySchedule(1, 'month1');
-            renderMonthlySchedule(2, 'month2');
-            renderSummaryTable();
-            
-            // 2. Setup event listeners for tabs
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const viewId = btn.getAttribute('data-target');
-                    showSchedule(viewId);
-                });
-            });
-
-            // 3. Set initial tab state
-            showSchedule('month1');
-        }
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initAppContent();
-        });
-    </script>
 </body>
 </html>
-

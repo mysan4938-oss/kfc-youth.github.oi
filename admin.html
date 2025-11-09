@@ -40,6 +40,7 @@
         let currentSchedule = [];
         let currentParticipants = { girls: [], boys: [] };
         let currentRoleLabels = {};
+        let adminUserId = null; // Storing the authenticated user's ID
 
         setLogLevel('Debug');
 
@@ -74,23 +75,33 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
+                // --- CRITICAL AUTHENTICATION STEP ---
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
+                    // Fallback to anonymous, but editing will fail unless the rules allow it.
                     await signInAnonymously(auth);
                 }
+                // ------------------------------------
 
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         authReady = true;
+                        adminUserId = user.uid; // Store the ID of the authenticated user (THE ADMIN)
+                        document.getElementById('admin-id-display').textContent = `Admin ID: ${adminUserId}`;
+                        
                         document.getElementById('loading-state').classList.add('hidden');
                         document.getElementById('admin-content').classList.remove('hidden');
                         loadDataFromFirestore();
                     } else {
+                        // This case handles anonymous sign-in or sign-out.
+                        // We still allow loading, but writing requires a specific ID (handled below).
                         authReady = true;
+                        document.getElementById('admin-id-display').textContent = 'Admin ID: Not Signed In (Read-Only)';
                         document.getElementById('loading-state').classList.add('hidden');
                         document.getElementById('admin-content').classList.remove('hidden');
                         loadDataFromFirestore();
+                        showMessage("Warning: You are not signed in with the Admin account. Saving changes may fail.", true);
                     }
                 });
 
@@ -102,31 +113,57 @@
 
         // --- Firestore Data Operations ---
 
-        const DATA_PATH = `/artifacts/${appId}/public/data/youth_schedule`;
-        const DATA_DOC_ID = 'schedule_config';
-        const docRef = () => doc(db, DATA_PATH, DATA_DOC_ID);
+        // NOTE: Data path is now PRIVATE to the authenticated user's ID
+        const DATA_PATH = (uid) => `/artifacts/${appId}/users/${uid}/schedule_config`;
+        const DATA_DOC_ID = 'schedule_data';
+
+        const docRef = (uid) => {
+            // If the user is authenticated, use their private path
+            if (uid) {
+                return doc(db, DATA_PATH(uid), DATA_DOC_ID);
+            }
+            // If anonymous/not authenticated, we can use the default public path for reading, 
+            // but writing will fail the security check.
+            return doc(db, `/artifacts/${appId}/public/data/youth_schedule`, DATA_DOC_ID);
+        };
+        
+        // This is the public path used by the main index.html for reading.
+        // The admin must WRITE to this PUBLIC path.
+        const PUBLIC_DOC_REF = () => doc(db, `/artifacts/${appId}/public/data/youth_schedule`, 'schedule_config');
+
 
         function showMessage(message, isError = false) {
             const statusDiv = document.getElementById('status-message');
-            statusDiv.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800');
-            statusDiv.classList.add(isError ? 'bg-red-100' : 'bg-green-100', isError ? 'text-red-800' : 'text-green-800');
+            statusDiv.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+            
+            let bgClass = isError ? 'bg-red-100' : 'bg-green-100';
+            let textClass = isError ? 'text-red-800' : 'text-green-800';
+
+            if (message.includes("Warning")) {
+                bgClass = 'bg-yellow-100';
+                textClass = 'text-yellow-800';
+            }
+
+            statusDiv.classList.add(bgClass, textClass);
             statusDiv.textContent = message;
-            setTimeout(() => { statusDiv.classList.add('hidden'); }, 4000);
+            setTimeout(() => { statusDiv.classList.add('hidden'); }, 6000);
         }
 
         async function loadDataFromFirestore() {
             if (!authReady || !db) return;
             try {
-                const docSnap = await getDoc(docRef());
+                // Admin reads from the PUBLIC document to ensure they see what the public sees.
+                const docSnap = await getDoc(PUBLIC_DOC_REF());
                 let dataToLoad;
 
                 if (docSnap.exists()) {
                     dataToLoad = docSnap.data();
-                    showMessage("Data loaded successfully from Firestore.");
+                    showMessage("Data loaded successfully from Public Firestore document.");
                 } else {
                     dataToLoad = initialData;
-                    await setDoc(docRef(), initialData);
-                    showMessage("Firestore document not found. Initialized and saved default data.");
+                    // Attempt to write initial data to public path (requires admin privileges)
+                    await setDoc(PUBLIC_DOC_REF(), initialData);
+                    showMessage("Public document not found. Initialized and attempted to save default data.", dataToLoad.scheduleData.length === 0);
                 }
 
                 // Update global state
@@ -145,17 +182,14 @@
             }
         }
         
-        // --- Week Management Logic (New Scalable Functions) ---
+        // --- Week Management Logic ---
         
         function getNextMonth(currentMonth, nextWeekIndex) {
-            // Simple logic: if the new week is the start of a group of 4 (e.g., 5, 9, 13...), increment the month.
-            // However, it's safer to base it on the position in the overall schedule array
             return Math.floor(nextWeekIndex / 4) + 1;
         }
 
         window.addWeek = function() {
-            if (!currentSchedule.length) {
-                // If schedule is empty, start at week 1, month 1
+            if (currentSchedule.length === 0) {
                 currentSchedule.push({
                     week: 1,
                     month: 1,
@@ -236,7 +270,7 @@
             return roles;
         }
 
-        // --- Form Rendering Functions ---
+        // --- Form Rendering Functions (Unchanged logic, updated to use correct colors/classes) ---
 
         function renderRoleLabelsInput(labels) {
              document.getElementById('roles-json').value = JSON.stringify(labels, null, 2);
@@ -260,26 +294,20 @@
             const editorDiv = document.getElementById('schedule-editor');
             if (!editorDiv) return;
 
-            // 1. Populate week selector
             const weekSelector = document.getElementById('week-selector');
             weekSelector.innerHTML = scheduleData.map(week => 
                 `<option value="${week.week}">အပတ် ${week.week} (${week.month} လ)</option>`
             ).join('');
             
-            // Fix: Check if data exists before setting up change event and updating form
             if (scheduleData.length > 0) {
-                 // Ensure the first option is selected if no previous selection exists
                 if (!weekSelector.value) {
                     weekSelector.value = scheduleData[0].week;
                 }
                 
-                // Set up event listener for change
                 weekSelector.onchange = () => updateWeekForm(scheduleData, participants, roleLabels);
 
-                // Initial render or re-render of the selected week
                 updateWeekForm(scheduleData, participants, roleLabels);
             } else {
-                // Handle no schedule data case (error fix)
                  const formContainer = document.getElementById('current-week-form');
                  formContainer.innerHTML = `<p class="text-red-500 text-center py-4">အစီအစဉ် ဇယား ဒေတာ မရှိပါ။</p>`;
             }
@@ -288,15 +316,12 @@
         function getParticipantOptions(participants, currentName) {
             let options = `<option value="">-- ရွေးချယ်ရန် --</option>`;
             
-            // Combine all participants
             let allNames = new Set([...participants.girls, ...participants.boys]);
             
-            // Add any non-standard names used in the schedule (like 'အတွင်းရေးမှူး' or specific guest speakers)
             if (currentName && !allNames.has(currentName)) {
                  allNames.add(currentName);
             }
 
-            // Create options list
             Array.from(allNames).sort().forEach(name => {
                 const isSelected = name === currentName ? 'selected' : '';
                 options += `<option value="${name}" ${isSelected}>${name}</option>`;
@@ -310,7 +335,6 @@
             const weekSelector = document.getElementById('week-selector');
             const selectedWeekValue = weekSelector.value;
             
-            // FIX: Ensure selection is valid
             if (!selectedWeekValue) {
                 const formContainer = document.getElementById('current-week-form');
                 formContainer.innerHTML = `<p class="text-red-500 text-center py-4">အပတ် ရွေးချယ်မှု မမှန်ကန်ပါ။</p>`;
@@ -328,20 +352,16 @@
 
             let formHtml = `<input type="hidden" id="current-week-index" value="${scheduleData.indexOf(weekData)}">`;
             
-            // Display Month and Week
             formHtml += `<h3 class="text-lg font-bold mb-4 border-b pb-2 text-admin-primary">အပတ် ${weekData.week} (${weekData.month} လ) တာဝန်များ</h3>`;
 
-            // Render roles as dropdowns
             Object.entries(roleLabels).forEach(([key, label]) => {
                 const currentName = weekData.roles[key] || '';
                 
-                // Get options including all participants
                 const options = getParticipantOptions(participants, currentName);
 
                 const isAdditionalRole = key === 'additionalRole';
                 
                 if (isAdditionalRole) {
-                     // For 'ဒေသနာ', use a simple text input as it often contains free-form text or special formatting
                     formHtml += `
                         <div class="mb-4 bg-white p-3 rounded-md border border-gray-200 shadow-sm">
                             <label class="block text-sm font-medium text-admin-primary mb-1">${label}</label>
@@ -350,7 +370,6 @@
                         </div>
                     `;
                 } else {
-                    // For standard roles, use a select dropdown
                     formHtml += `
                         <div class="mb-4 bg-white p-3 rounded-md border border-gray-200 shadow-sm">
                             <label class="block text-sm font-medium text-admin-primary mb-1">${label}</label>
@@ -393,15 +412,11 @@
                 if (element.tagName === 'SELECT') {
                     value = element.value;
                 } else if (element.tagName === 'TEXTAREA') {
-                    // For 'ဒေသနာ', convert new lines back to <br> for saving
                     value = element.value.replace(/\n/g, '<br>');
                 }
 
-                if (!value) {
-                    // Allow empty for additionalRole, but warn for others
-                    if (key !== 'additionalRole') {
-                         isFormValid = false;
-                    }
+                if (!value && key !== 'additionalRole') {
+                    isFormValid = false;
                 }
                 newRoles[key] = value || ''; 
             });
@@ -410,7 +425,6 @@
                 showMessage(`Warning: Week ${currentSchedule[index].week} has empty roles. Fill all standard roles for the best appearance.`, true);
             }
 
-            // Update the global currentSchedule array
             currentSchedule[index].roles = newRoles;
             showMessage(`Week ${currentSchedule[index].week} roles updated locally. Click 'Save All Changes' to commit.`, false);
         }
@@ -418,20 +432,17 @@
         // --- Master Save Function ---
 
         async function saveDataToFirestore() {
-            if (!authReady || !db) {
-                showMessage("Authentication not ready. Cannot save.", true);
+            // CRITICAL CHECK: Only allow saving if the admin user is authenticated
+            if (!authReady || !db || !adminUserId) {
+                showMessage("ACCESS DENIED: You must be signed in as the Admin user to save changes.", true);
                 return;
             }
 
             try {
-                // 1. Get current Role Labels (from JSON Textarea)
                 const rolesJson = document.getElementById('roles-json').value;
                 const roleLabels = JSON.parse(rolesJson);
 
-                // 2. Get current Participants (from simple text inputs)
                 const participants = getParticipantsFromInput();
-                
-                // 3. Current Schedule is already in the global 'currentSchedule' array after 'Save This Week' was clicked.
                 
                 const dataToSave = {
                     roleLabels,
@@ -439,17 +450,16 @@
                     scheduleData: currentSchedule
                 };
 
-                // 4. Write to Firestore
-                await setDoc(docRef(), dataToSave);
+                // 4. Write to the PUBLIC path. This requires the corresponding security rule.
+                await setDoc(PUBLIC_DOC_REF(), dataToSave);
 
                 showMessage("Data saved successfully to Firestore! Main schedule updated.", false);
                 
-                // Reload data to ensure forms reflect the saved state
                 loadDataFromFirestore();
 
             } catch (error) {
                 console.error("Error saving data:", error);
-                showMessage("Error saving data. Check JSON format (for Role Labels) or ensure all weeks have roles: " + error.message, true);
+                showMessage("Error saving data (Permission Denied?). Please ensure you are the correct Admin user: " + error.message, true);
             }
         }
 
@@ -506,7 +516,10 @@
     <div class="max-w-4xl mx-auto">
         <header class="bg-admin-primary text-white p-6 rounded-xl shadow-2xl mb-8 text-center" style="background: linear-gradient(135deg, #374151 0%, #4b5563 100%);">
             <h1 class="text-3xl font-extrabold mb-1">လူငယ်ဝတ်ပြုခြင်း အစီအစဉ် စီမံခန့်ခွဲရေး</h1>
-            <p class="opacity-90">ပိုမိုလွယ်ကူသော ဒေတာ ပြုပြင်ခြင်း</p>
+            <p class="opacity-90">သတ်မှတ်ထားသော Admin တစ်ဦးတည်းသာ ပြင်ဆင်နိုင်ပါသည်</p>
+            <div id="admin-id-display" class="text-sm mt-2 text-yellow-300 font-medium">
+                <!-- Admin ID will be shown here -->
+            </div>
         </header>
 
         <div id="loading-state" class="text-center p-8 bg-white rounded-xl shadow-md">
@@ -521,7 +534,7 @@
             </div>
 
             <p class="text-sm text-gray-700 bg-yellow-100 p-3 rounded-xl border-l-4 border-yellow-500 shadow-md">
-                **သတိပြုရန်:** အပြောင်းအလဲအားလုံးကို **Save All Changes** ကို နှိပ်မှသာ အစီအစဉ်စာမျက်နှာ (index.html) တွင် ပေါ်လာပါမည်။
+                **သတိပြုရန်:** Admin အဖြစ် ဝင်ရောက်ထားသူသာ **Save All Changes** ဖြင့် ဒေတာကို Firestore တွင် သိမ်းဆည်းနိုင်မည်။ အခြားသူများ ပြင်ဆင်ရန် ကြိုးစားပါက "Permission Denied" အမှား ပြပါမည်။
             </p>
             
             <!-- Participants Section (Form-based) -->
