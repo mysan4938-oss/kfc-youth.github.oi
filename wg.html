@@ -34,7 +34,7 @@
         
         /* Background image for aesthetics */
         #bg-image {
-            background-image: url('https://images.unsplash.com/photo-1517436034151-c0688006d649?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); 
+            background-image: url('https://https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/main.webp'); 
             filter: blur(0px) brightness(0.6);
             background-size: cover;
             background-position: center;
@@ -75,7 +75,9 @@
 <body class="min-h-screen p-4 md:p-8">
     
     <!-- Background: Changed from 'fixed' to 'absolute' to allow scrolling -->
-    <div id="bg-image" class="absolute inset-0 z-0 h-full"></div>
+    <!-- FIX: Added min-h-screen to ensure the background div stretches beyond the viewport height 
+        when the content is long, preventing cutoff at the bottom. -->
+    <div id="bg-image" class="absolute inset-0 z-0 min-h-screen h-full"></div>
 
     <!-- MAIN CONTENT CONTAINER -->
     <div class="container max-w-5xl mx-auto relative z-10">
