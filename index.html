@@ -46,12 +46,13 @@
         
         /* 2. MAIN PAGE BACKGROUND (Visible by Default - Christmas Theme) */
         #main-bg-image {
-            background-image: url('https://raw.githubusercontent.com/mysan4938-oss/kfc-youth.github.oi/refs/heads/main/main.webp'); 
+            background-image: url('https://images.unsplash.com/photo-1517436034151-c0688006d649?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); 
             filter: blur(0px) brightness(0.7); /* Apply blur and darken */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed; /* This locks the background */
+            /* background-attachment: fixed; -- REMOVED */
+            /* Using absolute + min-h-screen for scrolling background in the body */
         }
         
         /* Morph Glass Styles */
@@ -62,7 +63,7 @@
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             /* Red/Green Highlights for Eyecatching Effect */
-            box-shadow: 0 4px 20px rgba(0, 255, 0, 0.3), 0 -4px 20px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
             color: white; /* Ensure text is visible */
         }
         
@@ -71,8 +72,8 @@
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.4);
-            /* Subtle Green/Red inner shadow for depth */
-            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1), inset 0 0 10px rgba(255, 0, 0, 0.1);
+            /* Subtle inner shadow for depth */
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
         }
         
         /* General background utility for background divs */
@@ -82,10 +83,10 @@
 </head>
 <body class="min-h-screen p-4 md:p-8 font-sans">
     
-    <!-- BACKGROUND DIVS (Fixed position, low z-index) -->
-    <!-- The Main background is now visible by default -->
-    <div id="login-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0 hidden"></div>
-    <div id="main-bg-image" class="fixed inset-0 bg-cover bg-center transition duration-500 z-0"></div>
+    <!-- BACKGROUND DIVS (Absolute position to allow scrolling) -->
+    <!-- Note: Background image moved to absolute positioning to scroll with content -->
+    <div id="main-bg-image" class="absolute inset-0 z-0 min-h-full"></div>
+    <div id="login-bg-image" class="absolute inset-0 bg-cover bg-center transition duration-500 z-0 hidden min-h-full"></div>
     <!-- END BACKGROUND DIVS -->
 
     <!-- LOGIN SCREEN (Hidden by default) -->
@@ -126,9 +127,31 @@
         
         <!-- Header Section -->
         <header class="bg-primary text-white p-6 md:p-8 text-center rounded-t-xl" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
+            
+            <!-- NEW: Image and Label (Logo/Branding) -->
+            <div class="mb-4">
+                <img 
+                    src="https://placehold.co/100x100/3b82f6/ffffff?text=KFC+Youth" 
+                    alt="KFC Youth 2025 Logo" 
+                    class="w-24 h-24 mx-auto mb-2 rounded-full border-4 border-white shadow-xl"
+                    onerror="this.onerror=null; this.src='https://placehold.co/100x100/1e3a8a/ffffff?text=KFC'"
+                >
+                <div class="text-xl font-extrabold tracking-widest text-white mt-1">
+                    KFC Youth 2025
+                </div>
+            </div>
+            <!-- END NEW: Image and Label -->
+            
             <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်းအစီစဉ် (၈ ပတ်)</h1>
             <div class="text-lg opacity-90">Youth Worship Program Schedule</div>
         </header>
+        
+        <!-- NEW BUTTON TO DETAILED SCHEDULE (wg.html) -->
+        <div class="p-4 md:p-6 text-center -mt-4 mb-4">
+            <a href="wg.html" class="inline-block w-full max-w-sm bg-green-600 text-white font-extrabold py-3 px-8 rounded-xl hover:bg-green-700 transition duration-300 shadow-xl transform hover:scale-[1.02] active:scale-95 border-b-4 border-green-800 tracking-wide">
+                အစီစဉ် အသေးစိတ် (Full Flow)
+            </a>
+        </div>
         
         <div class="p-4 md:p-6 lg:p-8 text-white">
             
@@ -319,249 +342,4 @@
                 chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram",
                 piano: "Hpa Rat Hkawn",
                 additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 3, month: 1, roles: {
-                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan",
-                piano: "Zami Shine",
-                additionalRole: "Srm. Ah Dim",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 4, month: 1, roles: {
-                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "Youth Meeting",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 5, month: 2, roles: {
-                chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine",
-                piano: "Zami Shine",
-                additionalRole: "Sr. Dee Ram",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 6, month: 2, roles: {
-                chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 7, month: 2, roles: {
-                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn",
-                piano: "Zami Shine",
-                additionalRole: "Srm. Ah Ning",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-            { week: 8, month: 2, roles: {
-                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline",
-                piano: "Hpa Rat Hkawn",
-                additionalRole: "Youth Meeting",
-                // announcement: "အတွင်းရေးမှူး" // REMOVED
-            }},
-        ];
-
-        // --- UPDATED ROLE LABELS (Order adjusted to move 'ဒေသနာ' after 'ပြည့်စုံဆုတောင်း' and 'ကြေညာချိန်' removed) ---
-        const roleLabels = {
-            chairperson: "သဘာပတိ",
-            piano: "Piano", 
-            scripture: "အပြန်အလှန်ဖတ်", 
-            praise: "Solo ချီးမွမ်း",
-            offering: "အလှူငွေဆပ်ကပ်",  
-            // announcement: "ကြေညာချိန်", // REMOVED
-            fullness: "ပြည့်စုံဆုတောင်း",
-            additionalRole: "ဒေသနာ", // Last role
-        };
-
-        // --- ACCORDION TOGGLE FUNCTION (RESTORED) ---
-
-        /**
-         * Toggles the visibility of a content section (Accordion).
-         */
-        function toggleSection(contentId, button) {
-            const content = document.getElementById(contentId);
-            const icon = button.querySelector('span');
-
-            if (content.classList.contains('max-h-0')) {
-                // Expand
-                content.classList.remove('max-h-0');
-                content.classList.add('max-h-screen'); 
-                icon.classList.add('rotate-45'); 
-                content.classList.add('pb-4', 'pt-2'); 
-            } else {
-                // Collapse
-                content.classList.remove('max-h-screen');
-                content.classList.add('max-h-0');
-                icon.classList.remove('rotate-45');
-                content.classList.remove('pb-4', 'pt-2');
-            }
-        }
-
-
-        // --- DYNAMIC RENDERING FUNCTIONS (RESTORED TO USE LOCAL DATA) ---
-
-        /**
-         * Generates the HTML for a single week's detailed view.
-         * @param {Object} weekData - The data for the specific week.
-         * @returns {string} The HTML string for the week block.
-         */
-        function renderWeekBlock(weekData) {
-            let rolesHtml = '';
-            
-            // Use Object.entries to iterate over roles in the defined order from roleLabels
-            Object.entries(roleLabels).forEach(([key, label]) => {
-                let name = weekData.roles[key] || '-';
-                
-                // Remove 'ခြင်း' from the label for display in the card
-                const displayLabel = label.endsWith('ခြင်း') ? label.slice(0, -3) : label;
-                
-                const borderClass = key !== 'fullness' ? 'border-b border-dashed border-white/50' : '';
-                rolesHtml += `
-                    <!-- Larger padding (p-3) and vertically centered (items-center) for neat alignment -->
-                    <div class="flex justify-between p-3 ${borderClass} items-center"> 
-                        <span class="font-bold text-secondary">${displayLabel}</span> 
-                        <span class="text-white">${name}</span>
-                    </div>
-                `;
-            });
-
-            return `
-                <!-- Week ${weekData.week} - Larger Card Style -->
-                <div class="p-4 rounded-xl shadow-lg mb-0 border-t-4 border-primary morph-glass-card">
-                    <!-- Increased size (text-xl) and padding (py-3) for the header -->
-                    <div class="text-center text-xl font-bold bg-primary text-white py-3 rounded-lg mb-4">
-                        ${weekData.week} ပတ်
-                    </div>
-                    <div class="flex flex-col space-y-2">
-                        ${rolesHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Renders the schedule blocks for a given month, now using a grid layout.
-         * @param {number} month - The month number (1 or 2).
-         * @param {string} containerId - The ID of the HTML container element.
-         */
-        function renderMonthlySchedule(month, containerId) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            const weeks = scheduleData.filter(d => d.month === month);
-            let monthHtml = '';
-            weeks.forEach(weekData => {
-                monthHtml += renderWeekBlock(weekData);
-            });
-            
-            // Clear existing content and inject new content
-            const monthTitle = container.querySelector('div.text-center');
-            container.innerHTML = ''; // Clear previous content
-            
-            // Re-insert the title
-            if (monthTitle) {
-                container.appendChild(monthTitle);
-            } else {
-                 container.innerHTML = `<div class="text-center bg-gray-700 text-white font-bold py-2 rounded-lg mb-4 text-lg">${month === 1 ? 'ပထမ လ' : 'ဒုတိယ လ'}</div>`;
-            }
-
-            // Wrap the weekly blocks in a responsive grid container for neat alignment
-            const gridWrapper = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">${monthHtml}</div>`;
-            container.insertAdjacentHTML('beforeend', gridWrapper);
-        }
-
-        /**
-         * Renders the summary table rows, dynamically including all roles defined in roleLabels.
-         */
-        function renderSummaryTable() {
-            const tbody = document.getElementById('summary-tbody');
-            if (!tbody) return;
-
-            const roleKeys = Object.keys(roleLabels); // Get ordered keys
-
-            let summaryHtml = '';
-            scheduleData.forEach((weekData, index) => {
-                const rowClass = index % 2 === 0 ? 'bg-white/10' : 'bg-transparent';
-                
-                let roleCells = '';
-                // Dynamically create <td>s based on the order in roleLabels
-                roleKeys.forEach(key => {
-                    let roleValue = weekData.roles[key] || '-';
-                    roleCells += `<td class="p-3">${roleValue}</td>`;
-                });
-
-                summaryHtml += `
-                    <tr class="${rowClass} text-white hover:bg-white/20 transition duration-200">
-                        <td class="p-3">${weekData.week} ပတ်</td>
-                        ${roleCells}
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = summaryHtml;
-        }
-
-        // --- TAB SWITCHING LOGIC (RESTORED) ---
-
-        /**
-         * Switches the view between different schedule sections (Month 1, Month 2, Summary).
-         * @param {string} viewId - The ID of the schedule view to show ('month1', 'month2', or 'summary').
-         */
-        function showSchedule(viewId) {
-            // Hide all views
-            document.querySelectorAll('.schedule-view').forEach(view => {
-                view.classList.add('hidden');
-                view.classList.remove('active-view');
-            });
-
-            // Show the selected view
-            const selectedView = document.getElementById(viewId);
-            if (selectedView) {
-                selectedView.classList.remove('hidden');
-                selectedView.classList.add('active-view');
-            }
-
-            // Update active tab button style
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                // Ensure inactive buttons use the neutral transparent background
-                btn.classList.remove('active-tab', 'bg-primary', 'shadow-xl');
-                btn.classList.add('bg-white/30', 'shadow-md'); 
-                
-                // Check if the button's data-target matches the current viewId
-                if (btn.getAttribute('data-target') === viewId) {
-                    // Active button uses the solid primary color
-                    btn.classList.add('active-tab', 'bg-primary', 'shadow-xl');
-                    btn.classList.remove('bg-white/30', 'shadow-md');
-                }
-            });
-        }
-        
-        /**
-         * Initializes the dynamic content and UI events.
-         */
-        function initAppContent() {
-            // 1. Render all dynamic sections using the structured data
-            renderMonthlySchedule(1, 'month1');
-            renderMonthlySchedule(2, 'month2');
-            renderSummaryTable();
-            
-            // 2. Setup event listeners for tabs
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const viewId = btn.getAttribute('data-target');
-                    showSchedule(viewId);
-                });
-            });
-
-            // 3. Set initial tab state
-            showSchedule('month1');
-        }
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initAppContent();
-        });
-    </script>
-</body>
-</html>
-
-
+                // announ
