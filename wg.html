@@ -170,9 +170,10 @@
             "Srm. Ah Ning"
         ];
         
-        // --- UPDATED PROGRAM STRUCTURE (Hymn Song and Final Song removed) ---
+        // --- UPDATED PROGRAM STRUCTURE (Added 'ဓမ္မသီချင်း' after 'သဘာပတိ' and 'ဒေသနာ') ---
         const programStructure = [
             { label: "သဘာပတိ", roleKey: 'chairperson' },
+            { label: "ဓမ္မသီချင်း", roleKey: 'NO_LEADER' }, // Added: Hymn Song 1
             { label: "အပြန်အလှန်ဖတ်", roleKey: 'scripture' },
             { label: "Solo ချီးမွမ်း", roleKey: 'praise' },
             { label: "အလှူငွေကောက်ခံခြင်း", roleKey: 'NO_LEADER' }, // No leader (Target for center alignment)
@@ -180,6 +181,7 @@
             { label: "ကြေည်ညာချိန်", roleKey: 'NO_LEADER' }, // No leader
             { label: "ပြည့်စုံဆုတောင်း", roleKey: 'fullness' },
             { label: "ဒေသနာ", roleKey: 'sermon' }, 
+            { label: "ဓမ္မသီချင်း", roleKey: 'NO_LEADER' }, // Added: Hymn Song 2
             { label: "ပဌနာတော်ရွတ်ဆိုခြင်း", roleKey: 'NO_LEADER' }, // No leader (Target for center alignment)
             { label: "အာမင် သုံးကြိမ်", roleKey: 'NO_LEADER' }, // No leader
         ];
@@ -212,7 +214,7 @@
                     // This case should ideally not run, as 'piano' is removed from programStructure.
                     leaderDisplay = r.piano || '';
                 }
-                // 3. Handle NO_LEADER roles (like announcements and offerings collection/prayer)
+                // 3. Handle NO_LEADER roles (like announcements, offerings collection/prayer, and now Hymn Songs)
                 else if (item.roleKey === 'NO_LEADER') {
                     leaderDisplay = ''; // Force no leader for these items
                 } 
