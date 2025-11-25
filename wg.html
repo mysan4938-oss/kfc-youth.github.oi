@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>လူငယ်ဝတ်ပြုခြင်းအစီစဉ် အသေးစိတ် - Weekly Program</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind to use a custom font stack that supports Myanmar script
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Prioritize Pyidaungsu for better Myanmar script rendering
+                        sans: ['Pyidaungsu', 'Myanmar Text', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#1e3a8a', // Dark Indigo
+                        'secondary': '#2c5aa0', // Lighter Indigo
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom style for better font support and glass effect consistency -->
+    <style>
+        /* FONT ADJUSTMENT: Ensure Pyidaungsu is used correctly */
+        body {
+            background-color: #0d001a; 
+            font-family: 'Pyidaungsu', 'Myanmar Text', 'Inter', sans-serif;
+            font-weight: 500; /* Ensure medium weight for readability */
+        }
+        
+        /* Background image for aesthetics */
+        #bg-image {
+            background-image: url('https://images.unsplash.com/photo-1517436034151-c0688006d649?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); 
+            filter: blur(0px) brightness(0.6);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* Morph Glass Styles */
+        .morph-glass {
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            color: white; 
+        }
+        
+        .morph-glass-card {
+            background: rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Styling for the active tab button */
+        .tab-btn.active-tab {
+            background-color: #1e3a8a; /* primary color */
+            color: white;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.5);
+        }
+        
+        /* Ensure the leader names are slightly bolder for visibility */
+        .leader-name {
+            font-weight: 600; /* semi-bold */
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    
+    <!-- Background: Changed from 'fixed' to 'absolute' to allow scrolling -->
+    <div id="bg-image" class="absolute inset-0 z-0 h-full"></div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="container max-w-5xl mx-auto relative z-10">
+        
+        <!-- Header -->
+        <header class="bg-primary text-white p-6 md:p-8 text-center rounded-xl mb-8 morph-glass" style="background: linear-gradient(135deg, #1e3a8a 0%, #2c5aa0 100%);">
+            <h1 class="text-3xl font-extrabold mb-1 tracking-wide">လူငယ်ဝတ်ပြုခြင်းအစီစဉ် အသေးစိတ်</h1>
+            <div class="text-lg opacity-90">၈-ပတ်ကြာ အစီအစဉ်</div>
+        </header>
+
+        <!-- Tab Buttons for Month Selection -->
+        <div class="flex justify-center mb-6 p-1 rounded-xl morph-glass">
+            <button class="tab-btn p-3 px-6 min-w-[120px] text-center rounded-lg font-semibold text-white transition duration-300 mx-2 bg-white/20 hover:bg-white/30" data-target="month1-container">
+                လ ၁
+            </button>
+            <button class="tab-btn p-3 px-6 min-w-[120px] text-center rounded-lg font-semibold text-white transition duration-300 mx-2 bg-white/20 hover:bg-white/30" data-target="month2-container">
+                လ ၂
+            </button>
+        </div>
+
+        <!-- Dynamic Schedule Container for Month 1 -->
+        <div id="month1-container" class="schedule-view grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Content will be injected by JavaScript -->
+        </div>
+        
+        <!-- Dynamic Schedule Container for Month 2 -->
+        <div id="month2-container" class="schedule-view hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Content will be injected by JavaScript -->
+        </div>
+
+        <!-- FOOTER SECTION -->
+        <footer class="text-center p-4 mt-8 bg-white/20 text-white text-xs rounded-xl border-t border-white/50 morph-glass">
+            &copy; ၂၀၂၅ လူငယ်ဝတ်ပြုခြင်းအစီစဉ်<br>
+            ကောင်းကြီးနဲ့ပြည့်စုံသော နေ့ဖြစ်ပါစေ ❤️
+        </footer>
+    </div>
+
+    <!-- JavaScript for Data Management and Rendering -->
+    <script>
+        // --- LOCAL DATA STRUCTURE ---
+        const scheduleData = [
+            { week: 1, month: 1, roles: {
+                chairperson: "Tu Mai", scripture: "Seng Awng", praise: "Htoi Tsin Pan", offering: "May Lat Lunn", fullness: "Ah Dau", 
+                piano: "Zami Shine",
+                sermon: "Sr. Dau Gyung", 
+            }},
+            { week: 2, month: 1, roles: {
+                chairperson: "Dee Bine", scripture: "Benjamin", praise: "Zami Shar", offering: "Mi Mi Shar", fullness: "Shin Ram",
+                piano: "Hpa Rat Hkawn",
+                sermon: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း", 
+            }},
+            { week: 3, month: 1, roles: {
+                chairperson: "Hpa Rat Hkawn", scripture: "Zami Shine", praise: "Pan Ra", offering: "Caroline", fullness: "Htoi Tsin Pan",
+                piano: "Zami Shine",
+                sermon: "Srm. Ah Dim", 
+            }},
+            { week: 4, month: 1, roles: {
+                chairperson: "May Lat Lunn", scripture: "Ah Dau", praise: "Tu Mai", offering: "Seng Awng", fullness: "Dee Bine",
+                piano: "Hpa Rat Hkawn",
+                sermon: "Youth Meeting", 
+            }},
+            { week: 5, month: 2, roles: {
+                chairperson: "Benjamin", scripture: "Shin Ram", praise: "Mi Mi Shar", offering: "Zami Shar", fullness: "Zami Shine",
+                piano: "Zami Shine",
+                sermon: "Sr. Dee Ram", 
+            }},
+            { week: 6, month: 2, roles: {
+                chairperson: "Caroline", scripture: "Pan Ra", praise: "Hpa Rat Hkawn", offering: "Dee Bine", fullness: "Tu Mai",
+                piano: "Hpa Rat Hkawn",
+                sermon: "ကျမ်းစာဖတ်<br>သက်သေခံခြင်း", 
+            }},
+            { week: 7, month: 2, roles: {
+                chairperson: "Mi Mi Shar", scripture: "Htoi Tsin Pan", praise: "Benjamin", offering: "Shin Ram", fullness: "Hpa Rat Hkawn",
+                piano: "Zami Shine",
+                sermon: "Srm. Ah Ning", 
+            }},
+            { week: 8, month: 2, roles: {
+                chairperson: "Zami Shar", scripture: "May Lat Lunn", praise: "Ah Dau", offering: "Zami Shine", fullness: "Caroline",
+                piano: "Hpa Rat Hkawn",
+                sermon: "Youth Meeting", 
+            }},
+        ];
+        
+        // Roles that keep the 'ဒေသနာ' label
+        const sermonRoles = [
+            "Sr. Dau Gyung", 
+            "Srm. Ah Dim", 
+            "Sr. Dee Ram", 
+            "Srm. Ah Ning"
+        ];
+        
+        // --- UPDATED PROGRAM STRUCTURE (Hymn Song and Final Song removed) ---
+        const programStructure = [
+            { label: "သဘာပတိ", roleKey: 'chairperson' },
+            { label: "အပြန်အလှန်ဖတ်", roleKey: 'scripture' },
+            { label: "Solo ချီးမွမ်း", roleKey: 'praise' },
+            { label: "အလှူငွေကောက်ခံခြင်း", roleKey: 'NO_LEADER' }, // No leader (Target for center alignment)
+            { label: "အလှူငွေဆပ်ကပ်", roleKey: 'offering' },
+            { label: "ကြေည်ညာချိန်", roleKey: 'NO_LEADER' }, // No leader
+            { label: "ပြည့်စုံဆုတောင်း", roleKey: 'fullness' },
+            { label: "ဒေသနာ", roleKey: 'sermon' }, 
+            { label: "ပဌနာတော်ရွတ်ဆိုခြင်း", roleKey: 'NO_LEADER' }, // No leader (Target for center alignment)
+            { label: "အာမင် သုံးကြိမ်", roleKey: 'NO_LEADER' }, // No leader
+        ];
+
+
+        /**
+         * Generates the detailed program flow for a single week.
+         * @param {Object} weekData - The data for the specific week.
+         * @returns {string} The HTML string for the weekly program block.
+         */
+        function renderWeeklyProgram(weekData) {
+            const r = weekData.roles;
+            const weekNumber = weekData.week;
+            
+            let flowHtml = programStructure.map(item => {
+                let currentLabel = item.label;
+                let leaderDisplay = '';
+
+                // 1. Handle Sermon/Activity Label Switch
+                if (item.roleKey === 'sermon') {
+                    if (!sermonRoles.includes(r.sermon)) {
+                        currentLabel = r.sermon.replace(/<br>/g, ' / '); 
+                        leaderDisplay = ""; // No leader, so should be centered full-width
+                    } else {
+                         leaderDisplay = r.sermon;
+                    }
+                } 
+                // 2. Handle Piano (which is still in the roles data but not in the flow)
+                else if (item.roleKey === 'piano') {
+                    // This case should ideally not run, as 'piano' is removed from programStructure.
+                    leaderDisplay = r.piano || '';
+                }
+                // 3. Handle NO_LEADER roles (like announcements and offerings collection/prayer)
+                else if (item.roleKey === 'NO_LEADER') {
+                    leaderDisplay = ''; // Force no leader for these items
+                } 
+                // 4. Handle regular roles
+                else {
+                    leaderDisplay = r[item.roleKey] || ''; 
+                }
+                
+                // Final clean up for alignment purposes
+                // Leader Span remains the same (Pill badge)
+                const leaderSpan = leaderDisplay ? `<span class="leader-name bg-primary/80 px-3 py-1 rounded-full text-base font-bold">${leaderDisplay}</span>` : '';
+
+                // --- NEW LOGIC FOR FULL WIDTH & CENTER ALIGNMENT ---
+                const isFullWidthCentered = item.roleKey === 'NO_LEADER' || (item.roleKey === 'sermon' && leaderDisplay === "");
+                
+                let contentHtml;
+                
+                if (isFullWidthCentered) {
+                    // Item takes full width and is centered
+                    // Using font-bold for better emphasis on centered text
+                    contentHtml = `
+                        <div class="flex-grow text-center text-white font-bold text-base">
+                            ${currentLabel}
+                            ${item.note ? `<span class="text-xs text-gray-400 ml-2"> ${item.note}</span>` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Standard two-column layout (50/50 split)
+                    contentHtml = `
+                        <!-- Step and Label (Left Side - Fixed 50% width) -->
+                        <div class="flex items-center text-white font-medium w-1/2 text-base pr-2">
+                            ${currentLabel}
+                            ${item.note ? `<span class="text-xs text-gray-400 ml-2"> ${item.note}</span>` : ''}
+                        </div>
+                        
+                        <!-- Leader (Right Side - Fixed 50% width, Left Aligned within the column) -->
+                        <div class="w-1/2 pl-2">
+                            ${leaderSpan}
+                        </div>
+                    `;
+                }
+
+
+                // Generate List Item HTML
+                return `
+                    <li class="flex items-center py-2.5 px-4 border-b border-white/30 last:border-b-0 transition duration-150 hover:bg-white/10">
+                        ${contentHtml}
+                    </li>
+                `;
+            }).join('');
+
+            return `
+                <div class="rounded-xl overflow-hidden shadow-2xl morph-glass-card">
+                    <!-- Week Title -->
+                    <div class="p-4 bg-primary text-white text-center font-extrabold text-2xl" style="background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);">
+                        အပတ်စဉ် ${weekNumber}
+                    </div>
+                    
+                    <!-- Program Flow List -->
+                    <ul class="divide-y divide-white/20 p-4">
+                        ${flowHtml}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        /**
+         * Switches the view between Month 1 and Month 2 schedules.
+         */
+        function showMonth(monthId) {
+            // Hide all schedule views
+            document.querySelectorAll('.schedule-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+
+            // Show the selected month's view
+            const selectedView = document.getElementById(monthId);
+            if (selectedView) {
+                selectedView.classList.remove('hidden');
+            }
+
+            // Update active button style
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab');
+                btn.classList.add('bg-white/20', 'hover:bg-white/30');
+
+                if (btn.getAttribute('data-target') === monthId) {
+                    btn.classList.add('active-tab');
+                    btn.classList.remove('bg-white/20', 'hover:bg-white/30');
+                }
+            });
+        }
+        
+        /**
+         * Initializes the application by rendering the full 8-week schedule and setting up tabs.
+         */
+        function initAppContent() {
+            const container1 = document.getElementById('month1-container');
+            const container2 = document.getElementById('month2-container');
+            if (!container1 || !container2) return;
+            
+            // Filter and render Month 1 (Weeks 1-4)
+            const month1Data = scheduleData.filter(d => d.month === 1);
+            let scheduleHtml1 = '';
+            month1Data.forEach(weekData => {
+                scheduleHtml1 += renderWeeklyProgram(weekData);
+            });
+            container1.innerHTML = scheduleHtml1;
+
+            // Filter and render Month 2 (Weeks 5-8)
+            const month2Data = scheduleData.filter(d => d.month === 2);
+            let scheduleHtml2 = '';
+            month2Data.forEach(weekData => {
+                scheduleHtml2 += renderWeeklyProgram(weekData);
+            });
+            container2.innerHTML = scheduleHtml2;
+
+            // Setup Tab Listeners
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    showMonth(btn.getAttribute('data-target'));
+                });
+            });
+
+            // Set initial view to Month 1
+            showMonth('month1-container');
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', initAppContent);
+    </script>
+</body>
+</html>
+
